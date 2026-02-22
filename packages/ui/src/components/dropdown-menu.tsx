@@ -10,7 +10,10 @@ const DropdownMenu = ({ children }: { children: React.ReactNode }) => {
 
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -34,20 +37,25 @@ const DropdownMenuContext = React.createContext<{
 
 const useDropdownMenu = () => React.useContext(DropdownMenuContext);
 
-const DropdownMenuTrigger = ({ children, asChild }: { children: React.ReactNode; asChild?: boolean }) => {
+const DropdownMenuTrigger = ({
+  children,
+  asChild,
+}: {
+  children: React.ReactNode;
+  asChild?: boolean;
+}) => {
   const { isOpen, setIsOpen } = useDropdownMenu();
-  
+
   if (asChild && React.isValidElement(children)) {
-    return React.cloneElement(children as React.ReactElement, {
-      onClick: () => setIsOpen(!isOpen),
-    });
+    return React.cloneElement(
+      children as React.ReactElement<{ onClick: () => void }>,
+      {
+        onClick: () => setIsOpen(!isOpen),
+      }
+    );
   }
-  
-  return (
-    <button onClick={() => setIsOpen(!isOpen)}>
-      {children}
-    </button>
-  );
+
+  return <button onClick={() => setIsOpen(!isOpen)}>{children}</button>;
 };
 
 const DropdownMenuContent = ({
@@ -60,7 +68,7 @@ const DropdownMenuContent = ({
   align?: "start" | "center" | "end";
 }) => {
   const { isOpen } = useDropdownMenu();
-  
+
   if (!isOpen) return null;
 
   const alignClasses = {
@@ -94,7 +102,7 @@ const DropdownMenuItem = ({
   disabled?: boolean;
 }) => {
   const { setIsOpen } = useDropdownMenu();
-  
+
   return (
     <button
       disabled={disabled}
@@ -116,8 +124,19 @@ const DropdownMenuSeparator = ({ className }: { className?: string }) => (
   <div className={cn("-mx-1 my-1 h-px bg-steel-800", className)} />
 );
 
-const DropdownMenuLabel = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-  <div className={cn("px-2 py-1.5 text-xs font-semibold text-steel-500", className)}>
+const DropdownMenuLabel = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => (
+  <div
+    className={cn(
+      "px-2 py-1.5 text-xs font-semibold text-steel-500",
+      className
+    )}
+  >
     {children}
   </div>
 );

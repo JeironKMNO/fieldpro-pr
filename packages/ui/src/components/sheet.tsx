@@ -21,7 +21,7 @@ const Sheet = ({ children, open, onOpenChange }: SheetProps) => {
   const [internalOpen, setInternalOpen] = React.useState(false);
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open : internalOpen;
-  
+
   const setIsOpen = (value: boolean) => {
     if (!isControlled) setInternalOpen(value);
     onOpenChange?.(value);
@@ -34,26 +34,31 @@ const Sheet = ({ children, open, onOpenChange }: SheetProps) => {
   );
 };
 
-const SheetTrigger = ({ children, asChild }: { children: React.ReactNode; asChild?: boolean }) => {
+const SheetTrigger = ({
+  children,
+  asChild,
+}: {
+  children: React.ReactNode;
+  asChild?: boolean;
+}) => {
   const { setIsOpen } = useSheet();
-  
+
   if (asChild && React.isValidElement(children)) {
-    return React.cloneElement(children as React.ReactElement, {
-      onClick: () => setIsOpen(true),
-    });
+    return React.cloneElement(
+      children as React.ReactElement<{ onClick: () => void }>,
+      {
+        onClick: () => setIsOpen(true),
+      }
+    );
   }
-  
+
   return <button onClick={() => setIsOpen(true)}>{children}</button>;
 };
 
 const SheetClose = ({ children }: { children: React.ReactNode }) => {
   const { setIsOpen } = useSheet();
-  
-  return (
-    <button onClick={() => setIsOpen(false)}>
-      {children}
-    </button>
-  );
+
+  return <button onClick={() => setIsOpen(false)}>{children}</button>;
 };
 
 const SheetContent = ({
@@ -115,19 +120,42 @@ const SheetContent = ({
   );
 };
 
-const SheetHeader = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-  <div className={cn("flex flex-col space-y-2 text-center sm:text-left", className)}>
+const SheetHeader = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => (
+  <div
+    className={cn(
+      "flex flex-col space-y-2 text-center sm:text-left",
+      className
+    )}
+  >
     {children}
   </div>
 );
 
-const SheetTitle = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-  <h2 className={cn("text-lg font-semibold text-white", className)}>{children}</h2>
+const SheetTitle = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => (
+  <h2 className={cn("text-lg font-semibold text-white", className)}>
+    {children}
+  </h2>
 );
 
-const SheetDescription = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-  <p className={cn("text-sm text-steel-400", className)}>{children}</p>
-);
+const SheetDescription = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => <p className={cn("text-sm text-steel-400", className)}>{children}</p>;
 
 export {
   Sheet,

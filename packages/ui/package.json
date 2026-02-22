@@ -12,6 +12,7 @@
   "dependencies": {
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "lucide-react": "^0.468.0",
     "tailwind-merge": "^2.6.0"
   },
   "peerDependencies": {
@@ -20,8 +21,8 @@
   },
   "devDependencies": {
     "@fieldpro/config": "workspace:*",
-    "@types/react": "^18.2.48",
-    "@types/react-dom": "^18.2.18",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
     "typescript": "^5.6.3"
   }
 }
