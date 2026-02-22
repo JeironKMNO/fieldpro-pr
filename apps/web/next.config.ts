@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // Transpile UI packages
   transpilePackages: ["@fieldpro/ui", "@fieldpro/db", "@fieldpro/types"],
-  
+
   // Image optimization
   images: {
     remotePatterns: [
@@ -23,33 +23,21 @@ const nextConfig: NextConfig = {
     formats: ["image/webp", "image/avif"],
     minimumCacheTTL: 60,
   },
-  
+
   // Experimental features for performance
   experimental: {
     // Optimize package imports for faster dev
-    optimizePackageImports: [
-      "lucide-react",
-      "@fieldpro/ui",
-    ],
-    // Turbopack optimizations
-    turbo: {
-      rules: {
-        "*.svg": {
-          loaders: ["@svgr/webpack"],
-          as: "*.js",
-        },
-      },
-    },
+    // Note: @fieldpro/ui is already in transpilePackages — don't add it here
+    optimizePackageImports: ["lucide-react"],
   },
-  
+
   // Compiler optimizations
   compiler: {
     // Remove console logs in production
-    removeConsole: process.env.NODE_ENV === "production" 
-      ? { exclude: ["error"] } 
-      : false,
+    removeConsole:
+      process.env.NODE_ENV === "production" ? { exclude: ["error"] } : false,
   },
-  
+
   // Headers for caching
   async headers() {
     return [
@@ -64,24 +52,24 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  
+
   // Webpack optimizations
   webpack: (config, { dev, isServer }) => {
-    // Optimize dev build
     if (dev && !isServer) {
+      // Only disable module-availability checks — do NOT set splitChunks: false
+      // as it breaks Clerk and other packages that rely on code-splitting
       config.optimization = {
         ...config.optimization,
         removeAvailableModules: false,
         removeEmptyChunks: false,
-        splitChunks: false,
       };
     }
     return config;
   },
-  
+
   // Enable React strict mode for better debugging
   reactStrictMode: true,
-  
+
   // Powered by header
   poweredByHeader: false,
 };
