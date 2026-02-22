@@ -74,7 +74,7 @@ const THEME = {
 const IMAGES = {
   hero: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1920&q=80",
   workerTablet:
-    "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1200&q=80",
+    "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=80",
   constructionSite:
     "https://images.unsplash.com/photo-1590644365607-1c5a8e7b7999?w=1200&q=80",
   blueprint:
@@ -1088,50 +1088,36 @@ function TestimonialsSection() {
 function PricingSection() {
   const plans = [
     {
-      name: "Starter",
-      description: "Para contratistas independientes",
+      name: "Prueba Gratis",
+      description: "Prueba todas las funciones por 7 días",
       price: "$0",
-      period: "siempre",
+      period: "7 días",
       features: [
-        "Hasta 5 cotizaciones/mes",
-        "3 trabajos activos",
-        "PDFs básicos",
+        "Cotizaciones ilimitadas",
+        "Trabajos ilimitados",
+        "PDFs profesionales",
+        "Precios Home Depot PR",
+        "Facturación completa",
         "Soporte por email",
       ],
-      cta: "Comenzar gratis",
+      cta: "Iniciar prueba",
       popular: false,
     },
     {
       name: "Professional",
-      description: "Para equipos en crecimiento",
+      description: "Para contratistas serios",
       price: "$49",
       period: "/mes",
       features: [
-        "Cotizaciones ilimitadas",
-        "Trabajos ilimitados",
-        "PDFs personalizados",
-        "Precios Home Depot PR",
-        "Facturación",
+        "Todo ilimitado",
+        "PDFs personalizados con tu logo",
+        "Precios Home Depot PR en tiempo real",
+        "Facturación y seguimiento de pagos",
+        "Lista de materiales automática",
         "Soporte prioritario",
       ],
-      cta: "Iniciar prueba",
+      cta: "Suscribirme ahora",
       popular: true,
-    },
-    {
-      name: "Business",
-      description: "Para empresas establecidas",
-      price: "$99",
-      period: "/mes",
-      features: [
-        "Todo en Professional",
-        "Multi-empresa",
-        "Roles y permisos",
-        "API access",
-        "Soporte dedicado",
-        "Onboarding personalizado",
-      ],
-      cta: "Contactar ventas",
-      popular: false,
     },
   ];
 
@@ -1163,7 +1149,7 @@ function PricingSection() {
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {plans.map((plan, i) => (
             <div
               key={i}
