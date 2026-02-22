@@ -174,10 +174,66 @@
   to   { opacity: 1; }
 }
 
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(40, 145, 134, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(40, 145, 134, 0.5); }
+}
+
 .animate-fade-up {
   animation: fadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 .animate-fade-in {
   animation: fadeIn 0.4s ease forwards;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* ── Landing Page Specific Utilities ──────────────────────── */
+.text-gradient-teal {
+  background: linear-gradient(135deg, #3ab5a9 0%, #289186 50%, #1d6b63 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-amber {
+  background: linear-gradient(135deg, #f59e42 0%, #e8603c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.bg-gradient-construction {
+  background: linear-gradient(135deg, #1a5c56 0%, #289186 50%, #3ab5a9 100%);
+}
+
+.bg-gradient-warm {
+  background: linear-gradient(180deg, #faf8f4 0%, #ffffff 100%);
+}
+
+/* Smooth scroll offset for fixed nav */
+html {
+  scroll-padding-top: 80px;
+}
+
+/* Hero wave animation */
+@keyframes wave {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-25px); }
+}
+
+.animate-wave {
+  animation: wave 8s ease-in-out infinite;
 }
