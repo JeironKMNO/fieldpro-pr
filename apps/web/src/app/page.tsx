@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { SignInButton, SignUpButton } from "@clerk/nextjs";
 import {
   ArrowRight,
   CheckCircle,
@@ -198,26 +197,22 @@ function Navigation() {
 
           {/* Desktop Auth */}
           <div className="hidden lg:flex items-center gap-3">
-            <SignInButton mode="redirect" fallbackRedirectUrl="/dashboard">
-              <button
-                className="px-4 py-2 text-sm font-medium transition-colors rounded-lg"
-                style={{
-                  color: isScrolled ? THEME.stone[700] : "white",
-                }}
-              >
-                Iniciar sesión
-              </button>
-            </SignInButton>
-            <SignUpButton mode="redirect" fallbackRedirectUrl="/dashboard">
-              <button
-                className="px-5 py-2.5 text-sm font-semibold text-white rounded-lg transition-all hover:scale-105 hover:shadow-lg"
-                style={{
-                  background: `linear-gradient(135deg, ${THEME.teal[400]}, ${THEME.teal[600]})`,
-                }}
-              >
-                Comenzar gratis
-              </button>
-            </SignUpButton>
+            <Link
+              href="/sign-in"
+              className="px-4 py-2 text-sm font-medium transition-colors rounded-lg"
+              style={{ color: isScrolled ? THEME.stone[700] : "white" }}
+            >
+              Iniciar sesión
+            </Link>
+            <Link
+              href="/sign-up"
+              className="px-5 py-2.5 text-sm font-semibold text-white rounded-lg transition-all hover:scale-105 hover:shadow-lg"
+              style={{
+                background: `linear-gradient(135deg, ${THEME.teal[400]}, ${THEME.teal[600]})`,
+              }}
+            >
+              Comenzar gratis
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -250,24 +245,22 @@ function Navigation() {
               </a>
             ))}
             <hr style={{ borderColor: THEME.stone[200] }} />
-            <SignInButton mode="redirect" fallbackRedirectUrl="/dashboard">
-              <button
-                className="w-full py-2 text-sm font-medium text-left"
-                style={{ color: THEME.stone[700] }}
-              >
-                Iniciar sesión
-              </button>
-            </SignInButton>
-            <SignUpButton mode="redirect" fallbackRedirectUrl="/dashboard">
-              <button
-                className="w-full py-2.5 text-sm font-semibold text-white rounded-lg"
-                style={{
-                  background: `linear-gradient(135deg, ${THEME.teal[400]}, ${THEME.teal[600]})`,
-                }}
-              >
-                Comenzar gratis
-              </button>
-            </SignUpButton>
+            <Link
+              href="/sign-in"
+              className="block w-full py-2 text-sm font-medium"
+              style={{ color: THEME.stone[700] }}
+            >
+              Iniciar sesión
+            </Link>
+            <Link
+              href="/sign-up"
+              className="block w-full py-2.5 text-sm font-semibold text-white rounded-lg text-center"
+              style={{
+                background: `linear-gradient(135deg, ${THEME.teal[400]}, ${THEME.teal[600]})`,
+              }}
+            >
+              Comenzar gratis
+            </Link>
           </div>
         </div>
       )}
@@ -350,21 +343,20 @@ function HeroSection() {
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <SignUpButton mode="redirect" fallbackRedirectUrl="/dashboard">
-                <button
-                  className="group flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold rounded-xl transition-all hover:scale-105 hover:shadow-2xl"
-                  style={{
-                    background: `linear-gradient(135deg, ${THEME.amber[400]}, ${THEME.amber[500]})`,
-                    color: "white",
-                  }}
-                >
-                  Empezar gratis
-                  <ArrowRight
-                    size={20}
-                    className="transition-transform group-hover:translate-x-1"
-                  />
-                </button>
-              </SignUpButton>
+              <Link
+                href="/sign-up"
+                className="group flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold rounded-xl transition-all hover:scale-105 hover:shadow-2xl"
+                style={{
+                  background: `linear-gradient(135deg, ${THEME.amber[400]}, ${THEME.amber[500]})`,
+                  color: "white",
+                }}
+              >
+                Empezar gratis
+                <ArrowRight
+                  size={20}
+                  className="transition-transform group-hover:translate-x-1"
+                />
+              </Link>
               <button
                 className="group flex items-center justify-center gap-2 px-8 py-4 text-base font-medium rounded-xl border-2 border-white/30 backdrop-blur-sm transition-all hover:bg-white/10"
                 style={{ color: "white" }}
@@ -951,18 +943,14 @@ function ShowcaseSection() {
               ))}
             </div>
 
-            <SignUpButton mode="redirect" fallbackRedirectUrl="/dashboard">
-              <button
-                className="flex items-center gap-2 px-8 py-4 text-base font-semibold rounded-xl transition-all hover:scale-105"
-                style={{
-                  background: "white",
-                  color: THEME.teal[900],
-                }}
-              >
-                Probar gratis
-                <ArrowRight size={20} />
-              </button>
-            </SignUpButton>
+            <Link
+              href="/sign-up"
+              className="flex items-center gap-2 px-8 py-4 text-base font-semibold rounded-xl transition-all hover:scale-105"
+              style={{ background: "white", color: THEME.teal[900] }}
+            >
+              Probar gratis
+              <ArrowRight size={20} />
+            </Link>
           </div>
         </div>
       </div>
@@ -1206,22 +1194,19 @@ function PricingSection() {
                 ))}
               </ul>
 
-              <SignUpButton mode="redirect" fallbackRedirectUrl="/dashboard">
-                <button
-                  className={`w-full py-3 rounded-xl font-semibold transition-all ${
-                    plan.popular
-                      ? "hover:opacity-90"
-                      : "border hover:bg-stone-50"
-                  }`}
-                  style={{
-                    background: plan.popular ? THEME.teal[500] : "transparent",
-                    color: plan.popular ? "white" : THEME.stone[700],
-                    borderColor: plan.popular ? undefined : THEME.stone[300],
-                  }}
-                >
-                  {plan.cta}
-                </button>
-              </SignUpButton>
+              <Link
+                href="/sign-up"
+                className={`block w-full py-3 rounded-xl font-semibold text-center transition-all ${
+                  plan.popular ? "hover:opacity-90" : "border hover:bg-stone-50"
+                }`}
+                style={{
+                  background: plan.popular ? THEME.teal[500] : "transparent",
+                  color: plan.popular ? "white" : THEME.stone[700],
+                  borderColor: plan.popular ? undefined : THEME.stone[300],
+                }}
+              >
+                {plan.cta}
+              </Link>
             </div>
           ))}
         </div>
@@ -1258,15 +1243,14 @@ function CTASection() {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <SignUpButton mode="redirect" fallbackRedirectUrl="/dashboard">
-            <button
-              className="flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold rounded-xl transition-all hover:scale-105"
-              style={{ background: "white", color: THEME.teal[600] }}
-            >
-              Comenzar gratis ahora
-              <ArrowRight size={20} />
-            </button>
-          </SignUpButton>
+          <Link
+            href="/sign-up"
+            className="flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold rounded-xl transition-all hover:scale-105"
+            style={{ background: "white", color: THEME.teal[600] }}
+          >
+            Comenzar gratis ahora
+            <ArrowRight size={20} />
+          </Link>
           <button className="flex items-center justify-center gap-2 px-8 py-4 text-base font-medium rounded-xl border-2 border-white/30 text-white transition-all hover:bg-white/10">
             Agendar demo
           </button>
