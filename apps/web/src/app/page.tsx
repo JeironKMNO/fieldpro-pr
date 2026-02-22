@@ -198,7 +198,7 @@ function Navigation() {
 
           {/* Desktop Auth */}
           <div className="hidden lg:flex items-center gap-3">
-            <SignInButton mode="redirect">
+            <SignInButton mode="redirect" fallbackRedirectUrl="/dashboard">
               <button
                 className="px-4 py-2 text-sm font-medium transition-colors rounded-lg"
                 style={{
@@ -208,7 +208,7 @@ function Navigation() {
                 Iniciar sesión
               </button>
             </SignInButton>
-            <SignUpButton mode="redirect">
+            <SignUpButton mode="redirect" fallbackRedirectUrl="/dashboard">
               <button
                 className="px-5 py-2.5 text-sm font-semibold text-white rounded-lg transition-all hover:scale-105 hover:shadow-lg"
                 style={{
@@ -250,7 +250,7 @@ function Navigation() {
               </a>
             ))}
             <hr style={{ borderColor: THEME.stone[200] }} />
-            <SignInButton mode="redirect">
+            <SignInButton mode="redirect" fallbackRedirectUrl="/dashboard">
               <button
                 className="w-full py-2 text-sm font-medium text-left"
                 style={{ color: THEME.stone[700] }}
@@ -258,7 +258,7 @@ function Navigation() {
                 Iniciar sesión
               </button>
             </SignInButton>
-            <SignUpButton mode="redirect">
+            <SignUpButton mode="redirect" fallbackRedirectUrl="/dashboard">
               <button
                 className="w-full py-2.5 text-sm font-semibold text-white rounded-lg"
                 style={{
@@ -350,7 +350,7 @@ function HeroSection() {
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <SignUpButton mode="redirect">
+              <SignUpButton mode="redirect" fallbackRedirectUrl="/dashboard">
                 <button
                   className="group flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold rounded-xl transition-all hover:scale-105 hover:shadow-2xl"
                   style={{
@@ -951,7 +951,7 @@ function ShowcaseSection() {
               ))}
             </div>
 
-            <SignUpButton mode="redirect">
+            <SignUpButton mode="redirect" fallbackRedirectUrl="/dashboard">
               <button
                 className="flex items-center gap-2 px-8 py-4 text-base font-semibold rounded-xl transition-all hover:scale-105"
                 style={{
@@ -1206,7 +1206,7 @@ function PricingSection() {
                 ))}
               </ul>
 
-              <SignUpButton mode="redirect">
+              <SignUpButton mode="redirect" fallbackRedirectUrl="/dashboard">
                 <button
                   className={`w-full py-3 rounded-xl font-semibold transition-all ${
                     plan.popular
@@ -1258,7 +1258,7 @@ function CTASection() {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <SignUpButton mode="redirect">
+          <SignUpButton mode="redirect" fallbackRedirectUrl="/dashboard">
             <button
               className="flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold rounded-xl transition-all hover:scale-105"
               style={{ background: "white", color: THEME.teal[600] }}
