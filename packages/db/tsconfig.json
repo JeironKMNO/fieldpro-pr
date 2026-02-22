@@ -1,0 +1,10 @@
+{
+  "extends": "@fieldpro/config/tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2022"],
+    "target": "ES2022",
+    "module": "ESNext"
+  },
+  "include": ["src"],
+  "exclude": ["node_modules"]
+}

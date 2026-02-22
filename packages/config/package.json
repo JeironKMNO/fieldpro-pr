@@ -1,0 +1,10 @@
+{
+  "name": "@fieldpro/config",
+  "version": "0.0.0",
+  "private": true,
+  "files": [
+    "tsconfig.json",
+    "tsconfig-nextjs.json",
+    "eslint-next.js"
+  ]
+}

@@ -1,0 +1,355 @@
+import { z } from "zod";
+import { Prisma } from "@fieldpro/db";
+import { router, protectedProcedure } from "../trpc";
+
+export const organizationRouter = router({
+  current: protectedProcedure.query(async ({ ctx }) => {
+    return ctx.db.organization.findFirst({
+      where: { clerkId: ctx.auth.organizationId },
+      include: {
+        _count: {
+          select: { users: true, clients: true },
+        },
+      },
+    });
+  }),
+
+  stats: protectedProcedure.query(async ({ ctx }) => {
+    const orgId = ctx.auth.organizationId;
+
+    const [totalClients, activeClients, totalNotes] = await Promise.all([
+      ctx.db.client.count({ where: { organizationId: orgId } }),
+      ctx.db.client.count({
+        where: { organizationId: orgId, status: "ACTIVE" },
+      }),
+      ctx.db.note.count({ where: { organizationId: orgId } }),
+    ]);
+
+    return { totalClients, activeClients, totalNotes };
+  }),
+
+  dashboardStats: protectedProcedure.query(async ({ ctx }) => {
+    const orgId = ctx.auth.organizationId;
+
+    const [
+      quotesByStatus,
+      revenueAccepted,
+      revenuePending,
+      revenueDraft,
+      clientsByStatus,
+      clientsByType,
+      recentQuotes,
+      recentClients,
+      monthlyRevenue,
+      attentionQuotes,
+      jobsByStatus,
+      invoicesByStatus,
+      invoicePaidTotal,
+      invoiceOutstandingTotal,
+    ] = await Promise.all([
+      // 1. Quote counts by status
+      ctx.db.quote.groupBy({
+        by: ["status"],
+        where: { organizationId: orgId },
+        _count: true,
+      }),
+      // 2. Revenue: accepted
+      ctx.db.quote.aggregate({
+        where: { organizationId: orgId, status: "ACCEPTED" },
+        _sum: { total: true },
+      }),
+      // 3. Revenue: pending (SENT + VIEWED)
+      ctx.db.quote.aggregate({
+        where: { organizationId: orgId, status: { in: ["SENT", "VIEWED"] } },
+        _sum: { total: true },
+      }),
+      // 4. Revenue: draft
+      ctx.db.quote.aggregate({
+        where: { organizationId: orgId, status: "DRAFT" },
+        _sum: { total: true },
+      }),
+      // 5. Client counts by status
+      ctx.db.client.groupBy({
+        by: ["status"],
+        where: { organizationId: orgId },
+        _count: true,
+      }),
+      // 6. Client counts by type
+      ctx.db.client.groupBy({
+        by: ["type"],
+        where: { organizationId: orgId },
+        _count: true,
+      }),
+      // 7. Recent 5 quotes
+      ctx.db.quote.findMany({
+        where: { organizationId: orgId },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+        select: {
+          id: true,
+          quoteNumber: true,
+          status: true,
+          total: true,
+          createdAt: true,
+          client: { select: { name: true } },
+        },
+      }),
+      // 8. Recent 5 clients
+      ctx.db.client.findMany({
+        where: { organizationId: orgId },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+        select: {
+          id: true,
+          name: true,
+          type: true,
+          createdAt: true,
+          _count: { select: { quotes: true } },
+        },
+      }),
+      // 9. Monthly revenue (last 6 months) — raw SQL for date grouping
+      ctx.db.$queryRaw<
+        { month: string; label: string; total: number }[]
+      >(Prisma.sql`
+        SELECT
+          to_char(date_trunc('month', "createdAt"), 'YYYY-MM') AS month,
+          to_char(date_trunc('month', "createdAt"), 'Mon') AS label,
+          COALESCE(SUM("total"), 0)::float AS total
+        FROM quotes
+        WHERE "organizationId" = ${orgId}
+          AND status = 'ACCEPTED'
+          AND "createdAt" >= date_trunc('month', now()) - interval '5 months'
+        GROUP BY date_trunc('month', "createdAt")
+        ORDER BY date_trunc('month', "createdAt") ASC
+      `),
+      // 10. Quotes needing attention (SENT not viewed 2+ days, VIEWED no response 3+ days, expiring soon)
+      ctx.db.quote.findMany({
+        where: {
+          organizationId: orgId,
+          status: { in: ["SENT", "VIEWED"] },
+        },
+        orderBy: { sentAt: "asc" },
+        take: 10,
+        select: {
+          id: true,
+          quoteNumber: true,
+          status: true,
+          sentAt: true,
+          viewedAt: true,
+          validUntil: true,
+          shareToken: true,
+          client: { select: { name: true, phone: true, email: true } },
+        },
+      }),
+      // 11. Job counts by status
+      ctx.db.job.groupBy({
+        by: ["status"],
+        where: { organizationId: orgId },
+        _count: true,
+      }),
+      // 12. Invoice counts by status
+      ctx.db.invoice.groupBy({
+        by: ["status"],
+        where: { organizationId: orgId },
+        _count: true,
+      }),
+      // 13. Invoice revenue: paid
+      ctx.db.invoice.aggregate({
+        where: { organizationId: orgId, status: "PAID" },
+        _sum: { total: true },
+      }),
+      // 14. Invoice revenue: outstanding (SENT + VIEWED + OVERDUE)
+      ctx.db.invoice.aggregate({
+        where: { organizationId: orgId, status: { in: ["SENT", "VIEWED", "OVERDUE"] } },
+        _sum: { total: true },
+      }),
+    ]);
+
+    // Build quote counts map
+    const qcMap = Object.fromEntries(
+      quotesByStatus.map((g) => [g.status, g._count])
+    ) as Record<string, number>;
+    const quoteTotal = quotesByStatus.reduce((s, g) => s + g._count, 0);
+
+    // Build client counts
+    const csMap = Object.fromEntries(
+      clientsByStatus.map((g) => [g.status, g._count])
+    ) as Record<string, number>;
+    const ctMap = Object.fromEntries(
+      clientsByType.map((g) => [g.type, g._count])
+    ) as Record<string, number>;
+    const clientTotal = clientsByStatus.reduce((s, g) => s + g._count, 0);
+
+    // Conversion rate: accepted / (accepted + rejected) * 100
+    const accepted = qcMap.ACCEPTED ?? 0;
+    const rejected = qcMap.REJECTED ?? 0;
+    const conversionDenom = accepted + rejected;
+    const conversionRate =
+      conversionDenom > 0 ? Math.round((accepted / conversionDenom) * 100) : 0;
+
+    // Build job counts
+    const jcMap = Object.fromEntries(
+      jobsByStatus.map((g) => [g.status, g._count])
+    ) as Record<string, number>;
+
+    // Build invoice counts
+    const icMap = Object.fromEntries(
+      invoicesByStatus.map((g) => [g.status, g._count])
+    ) as Record<string, number>;
+
+    return {
+      quoteCounts: {
+        DRAFT: qcMap.DRAFT ?? 0,
+        SENT: qcMap.SENT ?? 0,
+        VIEWED: qcMap.VIEWED ?? 0,
+        ACCEPTED: qcMap.ACCEPTED ?? 0,
+        REJECTED: qcMap.REJECTED ?? 0,
+        EXPIRED: qcMap.EXPIRED ?? 0,
+        total: quoteTotal,
+      },
+      revenue: {
+        accepted: Number(revenueAccepted._sum.total ?? 0),
+        pending: Number(revenuePending._sum.total ?? 0),
+        draft: Number(revenueDraft._sum.total ?? 0),
+      },
+      clientCounts: {
+        total: clientTotal,
+        active: csMap.ACTIVE ?? 0,
+        residential: ctMap.RESIDENTIAL ?? 0,
+        commercial: ctMap.COMMERCIAL ?? 0,
+      },
+      recentQuotes: recentQuotes.map((q) => ({
+        id: q.id,
+        quoteNumber: q.quoteNumber,
+        status: q.status,
+        total: Number(q.total),
+        createdAt: q.createdAt,
+        clientName: q.client.name,
+      })),
+      recentClients: recentClients.map((c) => ({
+        id: c.id,
+        name: c.name,
+        type: c.type,
+        createdAt: c.createdAt,
+        quoteCount: c._count.quotes,
+      })),
+      monthlyRevenue,
+      conversionRate,
+      jobCounts: {
+        SCHEDULED: jcMap.SCHEDULED ?? 0,
+        IN_PROGRESS: jcMap.IN_PROGRESS ?? 0,
+        ON_HOLD: jcMap.ON_HOLD ?? 0,
+        COMPLETED: jcMap.COMPLETED ?? 0,
+        CANCELLED: jcMap.CANCELLED ?? 0,
+        active: (jcMap.SCHEDULED ?? 0) + (jcMap.IN_PROGRESS ?? 0),
+      },
+      invoiceCounts: {
+        DRAFT: icMap.DRAFT ?? 0,
+        SENT: icMap.SENT ?? 0,
+        VIEWED: icMap.VIEWED ?? 0,
+        PAID: icMap.PAID ?? 0,
+        OVERDUE: icMap.OVERDUE ?? 0,
+        CANCELLED: icMap.CANCELLED ?? 0,
+        outstanding: (icMap.SENT ?? 0) + (icMap.VIEWED ?? 0) + (icMap.OVERDUE ?? 0),
+      },
+      invoiceRevenue: {
+        paid: Number(invoicePaidTotal._sum.total ?? 0),
+        outstanding: Number(invoiceOutstandingTotal._sum.total ?? 0),
+      },
+      needsAttention: attentionQuotes
+        .map((q) => {
+          const now = new Date();
+          const daysSinceSent = q.sentAt
+            ? Math.floor(
+                (now.getTime() - new Date(q.sentAt).getTime()) /
+                  (24 * 60 * 60 * 1000)
+              )
+            : 0;
+          const daysSinceViewed = q.viewedAt
+            ? Math.floor(
+                (now.getTime() - new Date(q.viewedAt).getTime()) /
+                  (24 * 60 * 60 * 1000)
+              )
+            : 0;
+          const daysUntilExpiry = q.validUntil
+            ? Math.ceil(
+                (new Date(q.validUntil).getTime() - now.getTime()) /
+                  (24 * 60 * 60 * 1000)
+              )
+            : null;
+
+          let reason = "";
+          let priority = 0;
+
+          if (daysUntilExpiry !== null && daysUntilExpiry <= 3 && daysUntilExpiry > 0) {
+            reason = `Expira en ${daysUntilExpiry} día${daysUntilExpiry !== 1 ? "s" : ""}`;
+            priority = 3;
+          } else if (q.status === "VIEWED" && daysSinceViewed >= 3) {
+            reason = `Vista hace ${daysSinceViewed} días, sin respuesta`;
+            priority = 2;
+          } else if (q.status === "SENT" && daysSinceSent >= 2) {
+            reason = `Enviada hace ${daysSinceSent} días, no vista`;
+            priority = 1;
+          }
+
+          if (!reason) return null;
+
+          return {
+            id: q.id,
+            quoteNumber: q.quoteNumber,
+            status: q.status,
+            reason,
+            priority,
+            shareToken: q.shareToken,
+            clientName: q.client.name,
+            clientPhone: q.client.phone,
+            clientEmail: q.client.email,
+          };
+        })
+        .filter((q): q is NonNullable<typeof q> => q !== null)
+        .sort((a, b) => b.priority - a.priority),
+    };
+  }),
+
+  update: protectedProcedure
+    .input(
+      z.object({
+        logoUrl: z.string().nullable().optional(),
+        phone: z.string().nullable().optional(),
+        license: z.string().nullable().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.organization.update({
+        where: { id: ctx.auth.organizationId },
+        data: input,
+      });
+    }),
+
+  followUpSettings: protectedProcedure.query(async ({ ctx }) => {
+    const org = await ctx.db.organization.findUnique({
+      where: { id: ctx.auth.organizationId },
+      select: {
+        followUpDays: true,
+        expiryReminderDays: true,
+        autoFollowUp: true,
+      },
+    });
+    return org;
+  }),
+
+  updateFollowUpSettings: protectedProcedure
+    .input(
+      z.object({
+        followUpDays: z.number().min(1).max(14),
+        expiryReminderDays: z.number().min(1).max(14),
+        autoFollowUp: z.boolean(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.organization.update({
+        where: { id: ctx.auth.organizationId },
+        data: input,
+      });
+    }),
+});
