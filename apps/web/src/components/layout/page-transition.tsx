@@ -44,7 +44,8 @@ export function PageTransition({ children }: PageTransitionProps) {
       style={{
         opacity: isVisible ? 1 : 0,
         transition: "opacity 0.12s ease-out",
-        willChange: "opacity",
+        // NOTE: do NOT add willChange here — it creates a stacking context
+        // that traps position:fixed children and breaks z-index layering
         height: "100%",
       }}
     >

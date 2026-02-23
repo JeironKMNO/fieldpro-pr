@@ -255,9 +255,15 @@ export function AIChatPanel({
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [showHistoryNotice, setShowHistoryNotice] = useState(false);
+  // Guard: only initialize once. Without this, every call to saveMessages updates
+  // storedMessages → triggers this effect → resets messages mid-stream (causes flicker).
+  const initializedRef = useRef(false);
 
-  // Initialize messages from history or welcome message
+  // Initialize messages from history or welcome message — runs only once on mount
   useEffect(() => {
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+
     if (storedMessages.length > 0) {
       // Convert stored messages to component format
       const loadedMessages: Message[] = storedMessages.map((m) => ({
@@ -285,6 +291,7 @@ export function AIChatPanel({
         },
       ]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storedMessages, clientName]);
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -490,7 +497,6 @@ export function AIChatPanel({
         const decoder = new TextDecoder();
         let buffer = "";
         let accumulatedText = "";
-        let priceData: MaterialPrice[] | null = null;
 
         // Add streaming message
         setMessages((prev) => [
@@ -550,7 +556,6 @@ export function AIChatPanel({
                     break;
 
                   case "prices":
-                    priceData = data.prices;
                     setMessages((prev) =>
                       prev.map((m) =>
                         m.id === streamingMsgId
@@ -715,9 +720,8 @@ export function AIChatPanel({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const images =
+  const triggerSend = () => {
+    const imgs =
       selectedImages.length > 0
         ? selectedImages.map((img) => ({
             mimeType: img.mimeType,
@@ -728,7 +732,12 @@ export function AIChatPanel({
       selectedImages.length > 0
         ? selectedImages.map((img) => img.preview)
         : undefined;
-    sendMessage(inputText, images, previews, false, false);
+    sendMessage(inputText, imgs, previews, false, false);
+  };
+
+  const handleSubmit = (e: { preventDefault(): void }) => {
+    e.preventDefault();
+    triggerSend();
   };
 
   const handleRetry = (messageId: string) => {
@@ -749,15 +758,6 @@ export function AIChatPanel({
 
     // Remove the error message and retry
     setMessages((prev) => prev.filter((m) => m.id !== messageId));
-
-    // Retry with the user message content
-    const images = userMessage.images
-      ? userMessage.images.map((preview) => {
-          // For retry, we need to extract the base64 data from the stored preview
-          // This is a simplified approach - in production, you might want to store the original data
-          return { mimeType: "image/jpeg", data: preview };
-        })
-      : undefined;
 
     sendMessage(
       userMessage.content,
@@ -801,7 +801,7 @@ export function AIChatPanel({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit(e);
+      triggerSend();
     }
   };
 
@@ -860,42 +860,6 @@ export function AIChatPanel({
     setIsLoading(false);
     setStatusText(null);
     sendingRef.current = false;
-  };
-
-  const handleRegenerateResponse = () => {
-    // Find the last assistant message and remove it
-    const lastAssistantIndex = [...messages]
-      .reverse()
-      .findIndex((m) => m.role === "assistant" && !m.isError);
-    if (lastAssistantIndex === -1) return;
-
-    const actualIndex = messages.length - 1 - lastAssistantIndex;
-    const messageToRemove = messages[actualIndex];
-
-    // Remove the assistant message
-    setMessages((prev) => prev.filter((_, i) => i !== actualIndex));
-
-    // Find the user message that triggered this response
-    let userMessage: Message | null = null;
-    for (let i = actualIndex - 1; i >= 0; i--) {
-      if (messages[i].role === "user") {
-        userMessage = messages[i];
-        break;
-      }
-    }
-
-    if (!userMessage) return;
-
-    // Re-send the user message to get a new response
-    sendingRef.current = false;
-    sendMessage(
-      userMessage.content,
-      undefined,
-      userMessage.images,
-      userMessage.isAudio,
-      false,
-      messageToRemove.id
-    );
   };
 
   const startEditingMessage = (messageId: string, currentContent: string) => {
