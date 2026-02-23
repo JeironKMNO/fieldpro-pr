@@ -1,33 +1,19 @@
-import { auth, currentUser, clerkClient } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@fieldpro/db";
 
 export async function createContext() {
   const authData = await auth();
   const user = authData.userId ? await currentUser() : null;
 
-  let organizationName: string | null = null;
-  let organizationSlug: string | null = null;
-
-  if (authData.orgId) {
-    try {
-      const clerk = await clerkClient();
-      const org = await clerk.organizations.getOrganization({
-        organizationId: authData.orgId,
-      });
-      organizationName = org.name;
-      organizationSlug = org.slug;
-    } catch {
-      // Fallback if Clerk API fails
-    }
-  }
-
   return {
     auth: {
       userId: authData.userId,
       organizationId: authData.orgId ?? null,
-      organizationName,
-      organizationSlug,
-      role: (authData.sessionClaims?.metadata as { role?: string })?.role ?? null,
+      // orgSlug is embedded in the session token — no extra API call needed
+      organizationName: (authData.sessionClaims?.org_name as string) ?? null,
+      organizationSlug: authData.orgSlug ?? null,
+      role:
+        (authData.sessionClaims?.metadata as { role?: string })?.role ?? null,
       email: user?.primaryEmailAddress?.emailAddress ?? null,
       firstName: user?.firstName ?? null,
       lastName: user?.lastName ?? null,

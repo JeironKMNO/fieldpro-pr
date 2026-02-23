@@ -72,15 +72,36 @@ export function DashboardContent() {
     trpc.organization.dashboardStats.useQuery();
 
   if (error) {
+    const isNoOrg = error.data?.code === "UNAUTHORIZED";
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-center">
-        <p className="text-stone-500 text-sm">No se pudo cargar el panel.</p>
-        <button
-          onClick={() => window.location.reload()}
-          className="mt-3 text-xs text-teal-600 underline hover:text-teal-700"
-        >
-          Reintentar
-        </button>
+      <div className="flex flex-col items-center justify-center py-20 text-center px-4">
+        {isNoOrg ? (
+          <>
+            <div className="text-4xl mb-3">🏢</div>
+            <p className="text-stone-700 font-medium text-sm">
+              Selecciona o crea una organización
+            </p>
+            <p className="text-stone-400 text-xs mt-1 max-w-xs">
+              Usa el selector de organización en la barra superior para
+              seleccionar tu empresa o crear una nueva.
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="text-stone-500 text-sm">
+              No se pudo cargar el panel.
+            </p>
+            <p className="text-stone-400 text-xs mt-1">
+              Error: {error.data?.code ?? "UNKNOWN"}
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-3 text-xs text-teal-600 underline hover:text-teal-700"
+            >
+              Reintentar
+            </button>
+          </>
+        )}
       </div>
     );
   }
