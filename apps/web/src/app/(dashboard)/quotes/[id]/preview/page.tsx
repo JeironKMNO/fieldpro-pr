@@ -1,16 +1,10 @@
 import { api } from "@/lib/trpc/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import type { Prisma } from "@fieldpro/db";
 import { Button } from "@fieldpro/ui/components/button";
 import { ArrowLeft } from "lucide-react";
 import { QuotePreview } from "@/components/quotes/quote-preview";
 import { PrintButton } from "@/components/quotes/print-button";
-
-type QuoteSection = Prisma.QuoteSectionGetPayload<{
-  include: { category: true; items: true };
-}>;
-type QuoteItem = Prisma.QuoteItemGetPayload<Record<string, never>>;
 
 export default async function QuotePreviewPage({
   params,
@@ -38,10 +32,10 @@ export default async function QuotePreviewPage({
       taxRate: Number(quote.taxRate),
       taxAmount: Number(quote.taxAmount),
       total: Number(quote.total),
-      sections: quote.sections.map((section: QuoteSection) => ({
+      sections: quote.sections.map((section) => ({
         ...section,
         subtotal: Number(section.subtotal),
-        items: section.items.map((item: QuoteItem) => ({
+        items: section.items.map((item) => ({
           ...item,
           quantity: Number(item.quantity),
           unitPrice: Number(item.unitPrice),
