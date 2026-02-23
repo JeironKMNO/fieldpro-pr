@@ -1,7 +1,17 @@
 "use client";
 
 import { trpc } from "@/lib/trpc/client";
-import { DollarSign, Clock, FileText, Users, TrendingUp, Building2, PenLine, Briefcase, Receipt } from "lucide-react";
+import {
+  DollarSign,
+  Clock,
+  FileText,
+  Users,
+  TrendingUp,
+  Building2,
+  PenLine,
+  Briefcase,
+  Receipt,
+} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -46,7 +56,10 @@ function SkeletonBlock({ className }: { className?: string }) {
       <CardContent>
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-4 w-full animate-pulse rounded bg-stone-200" />
+            <div
+              key={i}
+              className="h-4 w-full animate-pulse rounded bg-stone-200"
+            />
           ))}
         </div>
       </CardContent>
@@ -55,7 +68,22 @@ function SkeletonBlock({ className }: { className?: string }) {
 }
 
 export function DashboardContent() {
-  const { data, isLoading } = trpc.organization.dashboardStats.useQuery();
+  const { data, isLoading, error } =
+    trpc.organization.dashboardStats.useQuery();
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <p className="text-stone-500 text-sm">No se pudo cargar el panel.</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-3 text-xs text-teal-600 underline hover:text-teal-700"
+        >
+          Reintentar
+        </button>
+      </div>
+    );
+  }
 
   if (isLoading || !data) {
     return (
@@ -118,7 +146,11 @@ export function DashboardContent() {
         />
         <KpiCard
           title="Facturas"
-          value={String(data.invoiceCounts.DRAFT + data.invoiceCounts.SENT + data.invoiceCounts.VIEWED)}
+          value={String(
+            data.invoiceCounts.DRAFT +
+              data.invoiceCounts.SENT +
+              data.invoiceCounts.VIEWED
+          )}
           icon={Receipt}
           description={`${data.invoiceCounts.DRAFT} borradores, ${data.invoiceCounts.OVERDUE} vencidas`}
         />
@@ -162,7 +194,9 @@ export function DashboardContent() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-4">
-              <div className="font-heading text-3xl font-bold text-stone-900">{data.conversionRate}%</div>
+              <div className="text-3xl font-bold text-stone-900 tabular-nums">
+                {data.conversionRate}%
+              </div>
               <div className="flex-1">
                 <div className="h-2 w-full rounded-full bg-stone-200">
                   <div
@@ -174,7 +208,8 @@ export function DashboardContent() {
                 </div>
                 <p className="mt-1 text-xs text-stone-500">
                   {data.quoteCounts.ACCEPTED} aceptadas de{" "}
-                  {data.quoteCounts.ACCEPTED + data.quoteCounts.REJECTED} decididas
+                  {data.quoteCounts.ACCEPTED + data.quoteCounts.REJECTED}{" "}
+                  decididas
                 </p>
               </div>
             </div>
@@ -193,11 +228,15 @@ export function DashboardContent() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-stone-400">Residencial</span>
-                <span className="font-heading text-lg font-bold text-stone-900">{data.clientCounts.residential}</span>
+                <span className="text-lg font-bold text-stone-900 tabular-nums">
+                  {data.clientCounts.residential}
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-stone-400">Comercial</span>
-                <span className="font-heading text-lg font-bold text-stone-900">{data.clientCounts.commercial}</span>
+                <span className="text-lg font-bold text-stone-900 tabular-nums">
+                  {data.clientCounts.commercial}
+                </span>
               </div>
               {data.clientCounts.total > 0 ? (
                 <div className="flex h-2 overflow-hidden rounded-full bg-stone-200 mt-1">
@@ -228,7 +267,9 @@ export function DashboardContent() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="font-heading text-3xl font-bold text-stone-900">{fmt(data.revenue.draft)}</div>
+            <div className="text-3xl font-bold text-stone-900 tabular-nums">
+              {fmt(data.revenue.draft)}
+            </div>
             <p className="mt-1.5 text-xs text-stone-500">
               {data.quoteCounts.DRAFT} cotizaciones en borrador
             </p>
