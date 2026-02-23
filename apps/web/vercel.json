@@ -1,0 +1,6 @@
+{
+  "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
+  "buildCommand": "cd ../.. && pnpm --filter @fieldpro/db run db:generate && pnpm turbo run build --filter=@fieldpro/web...",
+  "outputDirectory": ".next",
+  "framework": "nextjs"
+}
