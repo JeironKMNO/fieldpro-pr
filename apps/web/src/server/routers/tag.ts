@@ -17,7 +17,10 @@ export const tagRouter = router({
     .input(
       z.object({
         name: z.string().min(1, "Name is required").max(30),
-        color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#6B7280"),
+        color: z
+          .string()
+          .regex(/^#[0-9A-Fa-f]{6}$/)
+          .default("#6B7280"),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -68,6 +71,25 @@ export const tagRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      const [client, tag] = await Promise.all([
+        ctx.db.client.findFirst({
+          where: {
+            id: input.clientId,
+            organizationId: ctx.auth.organizationId,
+          },
+        }),
+        ctx.db.tag.findFirst({
+          where: { id: input.tagId, organizationId: ctx.auth.organizationId },
+        }),
+      ]);
+
+      if (!client || !tag) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Client or tag not found",
+        });
+      }
+
       return ctx.db.clientTag.create({
         data: {
           clientId: input.clientId,
@@ -84,6 +106,25 @@ export const tagRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      const [client, tag] = await Promise.all([
+        ctx.db.client.findFirst({
+          where: {
+            id: input.clientId,
+            organizationId: ctx.auth.organizationId,
+          },
+        }),
+        ctx.db.tag.findFirst({
+          where: { id: input.tagId, organizationId: ctx.auth.organizationId },
+        }),
+      ]);
+
+      if (!client || !tag) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Client or tag not found",
+        });
+      }
+
       return ctx.db.clientTag.delete({
         where: {
           clientId_tagId: {
