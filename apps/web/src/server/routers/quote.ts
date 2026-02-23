@@ -43,10 +43,7 @@ function calculateItemTotal(
   };
 }
 
-async function recalculateQuoteTotals(
-  db: PrismaClient,
-  quoteId: string
-) {
+async function recalculateQuoteTotals(db: PrismaClient, quoteId: string) {
   const sections = await db.quoteSection.findMany({
     where: { quoteId },
     include: { items: true },
@@ -142,14 +139,7 @@ export const quoteRouter = router({
         limit: z.number().min(1).max(100).default(20),
         search: z.string().optional(),
         status: z
-          .enum([
-            "DRAFT",
-            "SENT",
-            "VIEWED",
-            "ACCEPTED",
-            "REJECTED",
-            "EXPIRED",
-          ])
+          .enum(["DRAFT", "SENT", "VIEWED", "ACCEPTED", "REJECTED", "EXPIRED"])
           .optional(),
         clientId: z.string().optional(),
         sortBy: z
@@ -534,7 +524,10 @@ export const quoteRouter = router({
         include: { quote: { select: { organizationId: true, id: true } } },
       });
 
-      if (!section || section.quote.organizationId !== ctx.auth.organizationId) {
+      if (
+        !section ||
+        section.quote.organizationId !== ctx.auth.organizationId
+      ) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Section not found",
@@ -572,7 +565,10 @@ export const quoteRouter = router({
         },
       });
 
-      if (!section || section.quote.organizationId !== ctx.auth.organizationId) {
+      if (
+        !section ||
+        section.quote.organizationId !== ctx.auth.organizationId
+      ) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Section not found",
@@ -748,57 +744,108 @@ export const quoteRouter = router({
       if (input.status === "SENT") {
         data.sentAt = new Date();
       }
+      if (input.status === "ACCEPTED" || input.status === "REJECTED") {
+        data.respondedAt = new Date();
+      }
 
       const updated = await ctx.db.quote.update({
         where: { id: input.id },
         data,
       });
 
-      // Create activity record
-      if (input.status === "SENT" || input.status === "EXPIRED") {
+      // Activity records for key status transitions (DRAFT and VIEWED have no activity type in schema)
+      const activityStatuses = [
+        "SENT",
+        "ACCEPTED",
+        "REJECTED",
+        "EXPIRED",
+      ] as const;
+      if ((activityStatuses as readonly string[]).includes(input.status)) {
         await ctx.db.quoteActivity.create({
-          data: { quoteId: input.id, type: input.status },
+          data: {
+            quoteId: input.id,
+            type: input.status as (typeof activityStatuses)[number],
+          },
         });
       }
 
-      // Auto-create Job when manually accepting
+      // Helper: resolve the internal user record for this clerk session
+      const getUser = () =>
+        ctx.db.user.findFirst({
+          where: {
+            clerkId: ctx.auth.userId,
+            organizationId: ctx.auth.organizationId,
+          },
+        });
+
+      // Helper: create a new Job linked to this quote
+      const createLinkedJob = async (
+        status: "ON_HOLD" | "IN_PROGRESS" | "SCHEDULED"
+      ) => {
+        const user = await getUser();
+        if (!user) return;
+
+        const jobCounter = await ctx.db.jobCounter.upsert({
+          where: { organizationId: ctx.auth.organizationId },
+          update: { lastNumber: { increment: 1 } },
+          create: { organizationId: ctx.auth.organizationId, lastNumber: 1 },
+        });
+        const jobNumber = `JB-${String(jobCounter.lastNumber).padStart(3, "0")}`;
+
+        await ctx.db.job.create({
+          data: {
+            organizationId: ctx.auth.organizationId,
+            clientId: quote.clientId,
+            quoteId: quote.id,
+            createdById: user.id,
+            jobNumber,
+            title: quote.title,
+            value: quote.total,
+            status,
+            startedAt: status === "IN_PROGRESS" ? new Date() : undefined,
+          },
+        });
+      };
+
+      // SENT → auto-create Job "En Espera" (ON_HOLD) waiting for client response
+      if (input.status === "SENT") {
+        const existingJob = await ctx.db.job.findUnique({
+          where: { quoteId: input.id },
+        });
+        if (!existingJob) {
+          await createLinkedJob("ON_HOLD");
+        }
+      }
+
+      // ACCEPTED → move existing Job to IN_PROGRESS, or create one if missing
       if (input.status === "ACCEPTED") {
         const existingJob = await ctx.db.job.findUnique({
           where: { quoteId: input.id },
         });
 
-        if (!existingJob) {
-          const user = await ctx.db.user.findFirst({
-            where: {
-              clerkId: ctx.auth.userId,
-              organizationId: ctx.auth.organizationId,
+        if (existingJob) {
+          await ctx.db.job.update({
+            where: { id: existingJob.id },
+            data: {
+              status: "IN_PROGRESS",
+              startedAt: existingJob.startedAt ?? new Date(),
             },
           });
+        } else {
+          await createLinkedJob("IN_PROGRESS");
+        }
+      }
 
-          if (user) {
-            const jobCounter = await ctx.db.jobCounter.upsert({
-              where: { organizationId: ctx.auth.organizationId },
-              update: { lastNumber: { increment: 1 } },
-              create: {
-                organizationId: ctx.auth.organizationId,
-                lastNumber: 1,
-              },
-            });
-            const jobNumber = `JB-${String(jobCounter.lastNumber).padStart(3, "0")}`;
-
-            await ctx.db.job.create({
-              data: {
-                organizationId: ctx.auth.organizationId,
-                clientId: quote.clientId,
-                quoteId: quote.id,
-                createdById: user.id,
-                jobNumber,
-                title: quote.title,
-                value: quote.total,
-                status: "SCHEDULED",
-              },
-            });
-          }
+      // REJECTED → cancel the job if it's still on hold
+      if (input.status === "REJECTED") {
+        const existingJob = await ctx.db.job.findUnique({
+          where: { quoteId: input.id },
+        });
+        if (existingJob && existingJob.status === "ON_HOLD") {
+          await ctx.db.job.update({
+            where: { id: existingJob.id },
+            data: { status: "CANCELLED" },
+          });
         }
       }
 
@@ -868,5 +915,32 @@ export const quoteRouter = router({
       });
 
       return newQuote;
+    }),
+
+  delete: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const quote = await ctx.db.quote.findFirst({
+        where: { id: input.id, organizationId: ctx.auth.organizationId },
+        include: { job: true },
+      });
+
+      if (!quote) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Cotización no encontrada",
+        });
+      }
+
+      // Block deletion if there's an active (non-cancelled) job linked
+      if (quote.job && quote.job.status !== "CANCELLED") {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: `No puedes eliminar una cotización con un trabajo activo vinculado (${quote.job.jobNumber}). Cancela el trabajo primero.`,
+        });
+      }
+
+      await ctx.db.quote.delete({ where: { id: input.id } });
+      return { success: true };
     }),
 });

@@ -5,8 +5,8 @@ import { Separator } from "@fieldpro/ui/components/separator";
 interface PreviewQuote {
   quoteNumber: string;
   title: string | null;
-  createdAt: Date;
-  validUntil: Date | null;
+  createdAt: Date | string;
+  validUntil: Date | string | null;
   notes: string | null;
   subtotal: unknown;
   taxRate: unknown;
@@ -22,7 +22,12 @@ interface PreviewQuote {
     name: string;
     email: string | null;
     phone: string | null;
-    addresses: { street: string; city: string; state: string; zipCode: string }[];
+    addresses: {
+      street: string;
+      city: string;
+      state: string;
+      zipCode: string;
+    }[];
   };
   sections: {
     id: string;

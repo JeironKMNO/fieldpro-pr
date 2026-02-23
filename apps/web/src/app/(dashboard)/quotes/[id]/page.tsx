@@ -11,8 +11,8 @@ export default async function QuoteDetailPage({
 
   try {
     const caller = await api();
-    const quote = await caller.quote.byId({ id });
-    return <QuoteBuilder initialQuote={quote} />;
+    await caller.quote.byId({ id }); // verify exists, throws if not found
+    return <QuoteBuilder initialQuote={{ id }} />;
   } catch {
     notFound();
   }

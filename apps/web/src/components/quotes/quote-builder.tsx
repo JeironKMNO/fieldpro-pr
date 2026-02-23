@@ -5,8 +5,34 @@ import Link from "next/link";
 import { trpc } from "@/lib/trpc/client";
 import { Button } from "@fieldpro/ui/components/button";
 import { Card } from "@fieldpro/ui/components/card";
-import { ArrowLeft, Plus, Send, Eye, Copy, Sparkles, Briefcase } from "lucide-react";
+import {
+  ArrowLeft,
+  Plus,
+  Send,
+  Eye,
+  Copy,
+  Sparkles,
+  Briefcase,
+  ChevronDown,
+  Trash2,
+} from "lucide-react";
 import { QuoteStatusBadge } from "./quote-status-badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@fieldpro/ui/components/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@fieldpro/ui/components/dialog";
 import { QuoteSectionCard } from "./quote-section-card";
 import { QuoteSummary } from "./quote-summary";
 import { CategoryPickerDialog } from "./category-picker-dialog";
@@ -34,11 +60,16 @@ interface QuoteData {
   notes?: string;
 }
 
-export function QuoteBuilder({ initialQuote }: { initialQuote: { id: string } }) {
+export function QuoteBuilder({
+  initialQuote,
+}: {
+  initialQuote: { id: string };
+}) {
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [showSendDialog, setShowSendDialog] = useState(false);
   const [showAiAssistant, setShowAiAssistant] = useState(false);
   const [isApplyingAi, setIsApplyingAi] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const utils = trpc.useUtils();
 
   const { data: quote, isLoading } = trpc.quote.byId.useQuery({
@@ -48,6 +79,21 @@ export function QuoteBuilder({ initialQuote }: { initialQuote: { id: string } })
   const duplicate = trpc.quote.duplicate.useMutation({
     onSuccess: (newQuote) => {
       window.location.href = `/quotes/${newQuote.id}`;
+    },
+  });
+
+  const changeStatus = trpc.quote.updateStatus.useMutation({
+    onSuccess: () => utils.quote.byId.invalidate({ id: initialQuote.id }),
+    onError: (err) => alert(err.message),
+  });
+
+  const deleteQuote = trpc.quote.delete.useMutation({
+    onSuccess: () => {
+      window.location.href = "/quotes";
+    },
+    onError: (err) => {
+      alert(err.message);
+      setShowDeleteDialog(false);
     },
   });
 
@@ -72,6 +118,15 @@ export function QuoteBuilder({ initialQuote }: { initialQuote: { id: string } })
     utils.quote.byId.invalidate({ id: quote.id });
   };
 
+  const STATUS_OPTIONS = [
+    { value: "DRAFT", label: "Borrador" },
+    { value: "SENT", label: "Enviada" },
+    { value: "VIEWED", label: "Vista" },
+    { value: "ACCEPTED", label: "Aceptada" },
+    { value: "REJECTED", label: "Rechazada" },
+    { value: "EXPIRED", label: "Expirada" },
+  ] as const;
+
   const handleAiQuoteGenerated = async (quoteData: QuoteData) => {
     setIsApplyingAi(true);
     try {
@@ -95,7 +150,8 @@ export function QuoteBuilder({ initialQuote }: { initialQuote: { id: string } })
 
         // Check if section already exists for this category
         const existingSection = quote.sections.find(
-          (s) => s.category.name.toLowerCase() === section.category.toLowerCase()
+          (s) =>
+            s.category.name.toLowerCase() === section.category.toLowerCase()
         );
 
         let sectionId: string;
@@ -179,7 +235,8 @@ export function QuoteBuilder({ initialQuote }: { initialQuote: { id: string } })
             </div>
             <h3 className="font-semibold text-lg">Creando cotización...</h3>
             <p className="text-sm text-muted-foreground text-center max-w-xs">
-              Aplicando las secciones y items generados por la IA a tu cotización
+              Aplicando las secciones y items generados por la IA a tu
+              cotización
             </p>
             <div className="flex gap-1 mt-2">
               <span className="h-2 w-2 rounded-full bg-primary animate-bounce [animation-delay:0ms]" />
@@ -201,8 +258,38 @@ export function QuoteBuilder({ initialQuote }: { initialQuote: { id: string } })
             </Link>
             <div>
               <div className="flex items-center gap-3">
-                <h1 className="font-heading text-3xl font-bold">{quote.quoteNumber}</h1>
-                <QuoteStatusBadge status={quote.status} />
+                <h1 className="font-heading text-3xl font-bold">
+                  {quote.quoteNumber}
+                </h1>
+                {/* Clickable status badge — manual override */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="flex items-center gap-1 rounded-md hover:opacity-80 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                      <QuoteStatusBadge status={quote.status} />
+                      <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start">
+                    <DropdownMenuLabel>Cambiar estado</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {STATUS_OPTIONS.map((opt) => (
+                      <DropdownMenuItem
+                        key={opt.value}
+                        disabled={
+                          quote.status === opt.value || changeStatus.isPending
+                        }
+                        onClick={() =>
+                          changeStatus.mutate({
+                            id: quote.id,
+                            status: opt.value,
+                          })
+                        }
+                      >
+                        <QuoteStatusBadge status={opt.value} />
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
               <p className="text-muted-foreground">
                 {quote.client.name}
@@ -240,19 +327,30 @@ export function QuoteBuilder({ initialQuote }: { initialQuote: { id: string } })
                 Vista Previa
               </Button>
             </Link>
-            {!isDraft && (quote.status === "SENT" || quote.status === "VIEWED") && (
-              <ShareLinkButton
-                shareToken={quote.shareToken}
-                clientPhone={quote.client.phone}
-                clientEmail={quote.client.email}
-              />
-            )}
+            {!isDraft &&
+              (quote.status === "SENT" || quote.status === "VIEWED") && (
+                <ShareLinkButton
+                  shareToken={quote.shareToken}
+                  clientPhone={quote.client.phone}
+                  clientEmail={quote.client.email}
+                />
+              )}
             {isDraft && (
               <Button size="sm" onClick={() => setShowSendDialog(true)}>
                 <Send className="mr-2 h-4 w-4" />
                 Enviar
               </Button>
             )}
+            {/* Delete button */}
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
+              onClick={() => setShowDeleteDialog(true)}
+              title="Eliminar cotización"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </div>
         </div>
 
@@ -292,7 +390,8 @@ export function QuoteBuilder({ initialQuote }: { initialQuote: { id: string } })
               </h3>
               <p className="text-muted-foreground text-sm mt-1 max-w-md mx-auto">
                 Describe el proyecto por texto, voz o imágenes y la IA generará
-                una cotización completa con precios de materiales en Puerto Rico.
+                una cotización completa con precios de materiales en Puerto
+                Rico.
               </p>
             </div>
             <div className="flex gap-3 justify-center">
@@ -372,6 +471,42 @@ export function QuoteBuilder({ initialQuote }: { initialQuote: { id: string } })
           clientEmail={quote.client.email}
           onSent={invalidateQuote}
         />
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>¿Eliminar cotización?</DialogTitle>
+              <DialogDescription>
+                Esta acción no se puede deshacer. La cotización{" "}
+                <strong>{quote.quoteNumber}</strong> y todos sus items serán
+                eliminados permanentemente.
+                {quote.job && (
+                  <span className="mt-2 block text-destructive font-medium">
+                    ⚠️ Esta cotización tiene un trabajo vinculado (
+                    {quote.job.jobNumber}). Solo puedes eliminarla si el trabajo
+                    está cancelado.
+                  </span>
+                )}
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteDialog(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => deleteQuote.mutate({ id: quote.id })}
+                disabled={deleteQuote.isPending}
+              >
+                {deleteQuote.isPending ? "Eliminando..." : "Eliminar"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
