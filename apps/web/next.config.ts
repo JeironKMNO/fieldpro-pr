@@ -29,6 +29,10 @@ const nextConfig: NextConfig = {
   // (moved out of experimental in Next.js 15)
   outputFileTracingRoot: path.join(__dirname, "../../"),
 
+  // Prisma must NOT be bundled — keep as external require() so the native
+  // binary (.so.node) is resolved at runtime, not from inside a webpack chunk
+  serverExternalPackages: ["@prisma/client", ".prisma/client"],
+
   // Experimental features for performance
   experimental: {
     // Optimize package imports for faster dev
