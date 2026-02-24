@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
   // Transpile UI packages
@@ -29,6 +30,8 @@ const nextConfig: NextConfig = {
     // Optimize package imports for faster dev
     // Note: @fieldpro/ui is already in transpilePackages — don't add it here
     optimizePackageImports: ["lucide-react"],
+    // Required for Prisma in pnpm monorepo: tells Next.js to trace files from repo root
+    outputFileTracingRoot: path.join(__dirname, "../../"),
   },
 
   // Compiler optimizations
