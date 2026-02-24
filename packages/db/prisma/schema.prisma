@@ -43,6 +43,7 @@ model Organization {
   invoices        Invoice[]
   invoiceCounter  InvoiceCounter?
   materialLists   MaterialList[]
+  expenses        Expense[]
 
   @@index([clerkId])
   @@index([slug])
@@ -430,6 +431,7 @@ model Job {
   materialList MaterialList?
   tasks        JobTask[]
   changeOrders ChangeOrder[]
+  expenses     Expense[]
 
   @@index([organizationId])
   @@index([organizationId, status])
@@ -488,6 +490,42 @@ model ChangeOrder {
 
   @@index([jobId])
   @@map("change_orders")
+}
+
+// =====================================================
+// EXPENSES
+// =====================================================
+
+enum ExpenseCategory {
+  EQUIPMENT
+  SUBCONTRACTOR
+  PERMITS
+  MATERIAL
+  LABOR
+  OTHER
+}
+
+model Expense {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  jobId String
+  job   Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  description String
+  amount      Decimal         @db.Decimal(12, 2)
+  date        DateTime        @default(now())
+  category    ExpenseCategory @default(OTHER)
+  vendor      String?
+  receiptUrl  String?
+
+  @@index([organizationId])
+  @@index([jobId])
+  @@map("expenses")
 }
 
 // =====================================================

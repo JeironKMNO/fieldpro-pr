@@ -31,6 +31,7 @@ import { JobStatusBadge } from "./job-status-badge";
 import { JobTasks } from "./job-tasks";
 import { ChangeOrders } from "./change-orders";
 import { MaterialShoppingList } from "./material-shopping-list";
+import { JobExpenses } from "./job-expenses";
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -49,7 +50,12 @@ function formatDate(date: Date | string | null): string {
   });
 }
 
-type JobStatus = "SCHEDULED" | "IN_PROGRESS" | "ON_HOLD" | "COMPLETED" | "CANCELLED";
+type JobStatus =
+  | "SCHEDULED"
+  | "IN_PROGRESS"
+  | "ON_HOLD"
+  | "COMPLETED"
+  | "CANCELLED";
 
 interface StatusAction {
   label: string;
@@ -62,19 +68,54 @@ function getStatusActions(currentStatus: JobStatus): StatusAction[] {
   switch (currentStatus) {
     case "SCHEDULED":
       return [
-        { label: "Iniciar Trabajo", status: "IN_PROGRESS", icon: Play, variant: "default" },
-        { label: "Cancelar", status: "CANCELLED", icon: XCircle, variant: "destructive" },
+        {
+          label: "Iniciar Trabajo",
+          status: "IN_PROGRESS",
+          icon: Play,
+          variant: "default",
+        },
+        {
+          label: "Cancelar",
+          status: "CANCELLED",
+          icon: XCircle,
+          variant: "destructive",
+        },
       ];
     case "IN_PROGRESS":
       return [
-        { label: "Completar", status: "COMPLETED", icon: CheckCircle2, variant: "default" },
-        { label: "En Espera", status: "ON_HOLD", icon: Pause, variant: "outline" },
-        { label: "Cancelar", status: "CANCELLED", icon: XCircle, variant: "destructive" },
+        {
+          label: "Completar",
+          status: "COMPLETED",
+          icon: CheckCircle2,
+          variant: "default",
+        },
+        {
+          label: "En Espera",
+          status: "ON_HOLD",
+          icon: Pause,
+          variant: "outline",
+        },
+        {
+          label: "Cancelar",
+          status: "CANCELLED",
+          icon: XCircle,
+          variant: "destructive",
+        },
       ];
     case "ON_HOLD":
       return [
-        { label: "Reanudar", status: "IN_PROGRESS", icon: RotateCcw, variant: "default" },
-        { label: "Cancelar", status: "CANCELLED", icon: XCircle, variant: "destructive" },
+        {
+          label: "Reanudar",
+          status: "IN_PROGRESS",
+          icon: RotateCcw,
+          variant: "default",
+        },
+        {
+          label: "Cancelar",
+          status: "CANCELLED",
+          icon: XCircle,
+          variant: "destructive",
+        },
       ];
     default:
       return [];
@@ -89,7 +130,9 @@ export function JobDetail({ initialJob }: { initialJob: { id: string } }) {
   const utils = trpc.useUtils();
   const router = useRouter();
 
-  const { data: job, isLoading } = trpc.job.byId.useQuery({ id: initialJob.id });
+  const { data: job, isLoading } = trpc.job.byId.useQuery({
+    id: initialJob.id,
+  });
 
   const updateStatus = trpc.job.updateStatus.useMutation({
     onSuccess: () => {
@@ -136,7 +179,9 @@ export function JobDetail({ initialJob }: { initialJob: { id: string } }) {
           </Link>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="font-heading text-3xl font-bold">{job.jobNumber}</h1>
+              <h1 className="font-heading text-3xl font-bold">
+                {job.jobNumber}
+              </h1>
               <JobStatusBadge status={job.status} />
             </div>
             <p className="text-muted-foreground">
@@ -151,7 +196,9 @@ export function JobDetail({ initialJob }: { initialJob: { id: string } }) {
               key={action.status}
               variant={action.variant}
               size="sm"
-              onClick={() => updateStatus.mutate({ id: job.id, status: action.status })}
+              onClick={() =>
+                updateStatus.mutate({ id: job.id, status: action.status })
+              }
               disabled={updateStatus.isPending}
             >
               <action.icon className="mr-2 h-4 w-4" />
@@ -219,7 +266,9 @@ export function JobDetail({ initialJob }: { initialJob: { id: string } }) {
               {/* Value */}
               <div>
                 <p className="text-sm text-muted-foreground">Valor</p>
-                <p className="text-2xl font-bold">{formatCurrency(Number(job.value))}</p>
+                <p className="text-2xl font-bold">
+                  {formatCurrency(Number(job.value))}
+                </p>
               </div>
 
               {/* Dates */}
@@ -233,11 +282,15 @@ export function JobDetail({ initialJob }: { initialJob: { id: string } }) {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Iniciado</p>
-                  <p className="text-sm font-medium">{formatDate(job.startedAt)}</p>
+                  <p className="text-sm font-medium">
+                    {formatDate(job.startedAt)}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Completado</p>
-                  <p className="text-sm font-medium">{formatDate(job.completedAt)}</p>
+                  <p className="text-sm font-medium">
+                    {formatDate(job.completedAt)}
+                  </p>
                 </div>
               </div>
 
@@ -312,6 +365,9 @@ export function JobDetail({ initialJob }: { initialJob: { id: string } }) {
           {/* Tareas */}
           <JobTasks jobId={job.id} />
 
+          {/* Gastos y Ganancia */}
+          <JobExpenses jobId={job.id} jobValue={Number(job.value)} />
+
           {/* Órdenes de Cambio */}
           <ChangeOrders jobId={job.id} jobValue={Number(job.value)} />
 
@@ -357,7 +413,9 @@ export function JobDetail({ initialJob }: { initialJob: { id: string } }) {
               {job.invoice ? (
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">{job.invoice.invoiceNumber || "Factura"}</p>
+                    <p className="font-medium">
+                      {job.invoice.invoiceNumber || "Factura"}
+                    </p>
                     <p className="text-sm text-muted-foreground">
                       Creada desde este trabajo
                     </p>
@@ -371,7 +429,8 @@ export function JobDetail({ initialJob }: { initialJob: { id: string } }) {
               ) : job.status === "COMPLETED" ? (
                 <div className="space-y-3">
                   <p className="text-sm text-muted-foreground">
-                    Este trabajo está completado. Crea una factura para cobrar al cliente.
+                    Este trabajo está completado. Crea una factura para cobrar
+                    al cliente.
                   </p>
                   <Button
                     className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
@@ -418,10 +477,14 @@ export function JobDetail({ initialJob }: { initialJob: { id: string } }) {
               <div>
                 <p className="font-medium">{job.client.name}</p>
                 {job.client.email && (
-                  <p className="text-sm text-muted-foreground">{job.client.email}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {job.client.email}
+                  </p>
                 )}
                 {job.client.phone && (
-                  <p className="text-sm text-muted-foreground">{job.client.phone}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {job.client.phone}
+                  </p>
                 )}
               </div>
               {primaryAddress && (

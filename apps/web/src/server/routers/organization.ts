@@ -40,134 +40,124 @@ export const organizationRouter = router({
     }
 
     try {
-      const [
-        quotesByStatus,
-        revenueAccepted,
-        revenuePending,
-        revenueDraft,
-        clientsByStatus,
-        clientsByType,
-        recentQuotes,
-        recentClients,
-        monthlyRevenue,
-        attentionQuotes,
-        jobsByStatus,
-        invoicesByStatus,
-        invoicePaidTotal,
-        invoiceOutstandingTotal,
-      ] = await ctx.db.$transaction([
-        // 1. Quote counts by status
-        ctx.db.quote.groupBy({
-          by: ["status"],
-          where: { organizationId: orgId },
-          _count: true,
-        }),
-        // 2. Revenue: accepted
-        ctx.db.quote.aggregate({
-          where: { organizationId: orgId, status: "ACCEPTED" },
-          _sum: { total: true },
-        }),
-        // 3. Revenue: pending (SENT + VIEWED)
-        ctx.db.quote.aggregate({
-          where: { organizationId: orgId, status: { in: ["SENT", "VIEWED"] } },
-          _sum: { total: true },
-        }),
-        // 4. Revenue: draft
-        ctx.db.quote.aggregate({
-          where: { organizationId: orgId, status: "DRAFT" },
-          _sum: { total: true },
-        }),
-        // 5. Client counts by status
-        ctx.db.client.groupBy({
-          by: ["status"],
-          where: { organizationId: orgId },
-          _count: true,
-        }),
-        // 6. Client counts by type
-        ctx.db.client.groupBy({
-          by: ["type"],
-          where: { organizationId: orgId },
-          _count: true,
-        }),
-        // 7. Recent 5 quotes
-        ctx.db.quote.findMany({
-          where: { organizationId: orgId },
-          orderBy: { createdAt: "desc" },
-          take: 5,
-          select: {
-            id: true,
-            quoteNumber: true,
-            status: true,
-            total: true,
-            createdAt: true,
-            client: { select: { name: true } },
-          },
-        }),
-        // 8. Recent 5 clients
-        ctx.db.client.findMany({
-          where: { organizationId: orgId },
-          orderBy: { createdAt: "desc" },
-          take: 5,
-          select: {
-            id: true,
-            name: true,
-            type: true,
-            createdAt: true,
-            _count: { select: { quotes: true } },
-          },
-        }),
-        // 9. Monthly revenue (last 6 months) — raw SQL for date grouping
-        ctx.db.$queryRaw<
-          { month: string; label: string; total: number }[]
-        >(Prisma.sql`
-        SELECT
-          to_char(date_trunc('month', "createdAt"), 'YYYY-MM') AS month,
-          to_char(date_trunc('month', "createdAt"), 'Mon') AS label,
-          COALESCE(SUM("total"), 0)::float AS total
-        FROM quotes
-        WHERE "organizationId" = ${orgId}
-          AND status = 'ACCEPTED'
-          AND "createdAt" >= date_trunc('month', now()) - interval '5 months'
-        GROUP BY date_trunc('month', "createdAt")
-        ORDER BY date_trunc('month', "createdAt") ASC
-      `),
-        // 10. Quotes needing attention (SENT not viewed 2+ days, VIEWED no response 3+ days, expiring soon)
-        ctx.db.quote.findMany({
-          where: {
-            organizationId: orgId,
-            status: { in: ["SENT", "VIEWED"] },
-          },
-          orderBy: { sentAt: "asc" },
-          take: 10,
-          select: {
-            id: true,
-            quoteNumber: true,
-            status: true,
-            sentAt: true,
-            viewedAt: true,
-            validUntil: true,
-            shareToken: true,
-            client: { select: { name: true, phone: true, email: true } },
-          },
-        }),
-        // 11. Job counts by status
-        ctx.db.job.groupBy({
-          by: ["status"],
-          where: { organizationId: orgId },
-          _count: true,
-        }),
-        // 12. Invoice counts by status
-        ctx.db.invoice.groupBy({
-          by: ["status"],
-          where: { organizationId: orgId },
-          _count: true,
-        }),
-        // 13. Invoice revenue: paid
+      // BATCH 1: Quotes summary & revenue
+      const [quotesByStatus, revenueAccepted, revenuePending, revenueDraft] =
+        await Promise.all([
+          ctx.db.quote.groupBy({
+            by: ["status"],
+            where: { organizationId: orgId },
+            _count: true,
+          }),
+          ctx.db.quote.aggregate({
+            where: { organizationId: orgId, status: "ACCEPTED" },
+            _sum: { total: true },
+          }),
+          ctx.db.quote.aggregate({
+            where: {
+              organizationId: orgId,
+              status: { in: ["SENT", "VIEWED"] },
+            },
+            _sum: { total: true },
+          }),
+          ctx.db.quote.aggregate({
+            where: { organizationId: orgId, status: "DRAFT" },
+            _sum: { total: true },
+          }),
+        ]);
+
+      // BATCH 2: Clients & Recent activity
+      const [clientsByStatus, clientsByType, recentQuotes, recentClients] =
+        await Promise.all([
+          ctx.db.client.groupBy({
+            by: ["status"],
+            where: { organizationId: orgId },
+            _count: true,
+          }),
+          ctx.db.client.groupBy({
+            by: ["type"],
+            where: { organizationId: orgId },
+            _count: true,
+          }),
+          ctx.db.quote.findMany({
+            where: { organizationId: orgId },
+            orderBy: { createdAt: "desc" },
+            take: 5,
+            select: {
+              id: true,
+              quoteNumber: true,
+              status: true,
+              total: true,
+              createdAt: true,
+              client: { select: { name: true } },
+            },
+          }),
+          ctx.db.client.findMany({
+            where: { organizationId: orgId },
+            orderBy: { createdAt: "desc" },
+            take: 5,
+            select: {
+              id: true,
+              name: true,
+              type: true,
+              createdAt: true,
+              _count: { select: { quotes: true } },
+            },
+          }),
+        ]);
+
+      // BATCH 3: Jobs, Invoices & Complex queries
+      const [jobsByStatus, invoicesByStatus, monthlyRevenue, attentionQuotes] =
+        await Promise.all([
+          ctx.db.job.groupBy({
+            by: ["status"],
+            where: { organizationId: orgId },
+            _count: true,
+          }),
+          ctx.db.invoice.groupBy({
+            by: ["status"],
+            where: { organizationId: orgId },
+            _count: true,
+          }),
+          ctx.db.$queryRaw<
+            { month: string; label: string; total: number }[]
+          >(Prisma.sql`
+          SELECT
+            to_char(date_trunc('month', "createdAt"), 'YYYY-MM') AS month,
+            to_char(date_trunc('month', "createdAt"), 'Mon') AS label,
+            COALESCE(SUM("total"), 0)::float AS total
+          FROM quotes
+          WHERE "organizationId" = ${orgId}
+            AND status = 'ACCEPTED'
+            AND "createdAt" >= date_trunc('month', now()) - interval '5 months'
+          GROUP BY date_trunc('month', "createdAt")
+          ORDER BY date_trunc('month', "createdAt") ASC
+        `),
+          ctx.db.quote.findMany({
+            where: {
+              organizationId: orgId,
+              status: { in: ["SENT", "VIEWED"] },
+            },
+            orderBy: { sentAt: "asc" },
+            take: 10,
+            select: {
+              id: true,
+              quoteNumber: true,
+              status: true,
+              sentAt: true,
+              viewedAt: true,
+              validUntil: true,
+              shareToken: true,
+              client: { select: { name: true, phone: true, email: true } },
+            },
+          }),
+        ]);
+
+      // BATCH 4: Invoice Revenue
+      const [invoicePaidTotal, invoiceOutstandingTotal] = await Promise.all([
         ctx.db.invoice.aggregate({
           where: { organizationId: orgId, status: "PAID" },
           _sum: { total: true },
         }),
-        // 14. Invoice revenue: outstanding (SENT + VIEWED + OVERDUE)
         ctx.db.invoice.aggregate({
           where: {
             organizationId: orgId,

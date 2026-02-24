@@ -9,6 +9,7 @@ import { jobTaskRouter } from "./job-task";
 import { changeOrderRouter } from "./change-order";
 import { invoiceRouter } from "./invoice";
 import { materialRouter } from "./material";
+import { expenseRouter } from "./expense";
 
 export const appRouter = router({
   clients: clientRouter,
@@ -21,6 +22,7 @@ export const appRouter = router({
   changeOrder: changeOrderRouter,
   invoice: invoiceRouter,
   material: materialRouter,
+  expense: expenseRouter,
 });
 
 export type AppRouter = typeof appRouter;
