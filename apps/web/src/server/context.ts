@@ -3,7 +3,16 @@ import { prisma } from "@fieldpro/db";
 
 export async function createContext() {
   const authData = await auth();
-  const user = authData.userId ? await currentUser() : null;
+  // currentUser() makes an HTTP call to Clerk — wrap in try/catch so a
+  // transient Clerk API failure doesn't take down every tRPC route.
+  let user = null;
+  if (authData.userId) {
+    try {
+      user = await currentUser();
+    } catch {
+      // Non-fatal: user details unavailable, enforceAuth will use DB data
+    }
+  }
 
   return {
     auth: {

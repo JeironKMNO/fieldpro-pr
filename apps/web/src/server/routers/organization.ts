@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { Prisma } from "@fieldpro/db";
 import { router, protectedProcedure } from "../trpc";
 
 export const organizationRouter = router({
@@ -105,52 +104,86 @@ export const organizationRouter = router({
           }),
         ]);
 
-      // BATCH 3: Jobs, Invoices & Complex queries
-      const [jobsByStatus, invoicesByStatus, monthlyRevenue, attentionQuotes] =
-        await Promise.all([
-          ctx.db.job.groupBy({
-            by: ["status"],
-            where: { organizationId: orgId },
-            _count: true,
-          }),
-          ctx.db.invoice.groupBy({
-            by: ["status"],
-            where: { organizationId: orgId },
-            _count: true,
-          }),
-          ctx.db.$queryRaw<
-            { month: string; label: string; total: number }[]
-          >(Prisma.sql`
-          SELECT
-            to_char(date_trunc('month', "createdAt"), 'YYYY-MM') AS month,
-            to_char(date_trunc('month', "createdAt"), 'Mon') AS label,
-            COALESCE(SUM("total"), 0)::float AS total
-          FROM quotes
-          WHERE "organizationId" = ${orgId}
-            AND status = 'ACCEPTED'
-            AND "createdAt" >= date_trunc('month', now()) - interval '5 months'
-          GROUP BY date_trunc('month', "createdAt")
-          ORDER BY date_trunc('month', "createdAt") ASC
-        `),
-          ctx.db.quote.findMany({
-            where: {
-              organizationId: orgId,
-              status: { in: ["SENT", "VIEWED"] },
-            },
-            orderBy: { sentAt: "asc" },
-            take: 10,
-            select: {
-              id: true,
-              quoteNumber: true,
-              status: true,
-              sentAt: true,
-              viewedAt: true,
-              validUntil: true,
-              shareToken: true,
-              client: { select: { name: true, phone: true, email: true } },
-            },
-          }),
-        ]);
+      // BATCH 3: Jobs, Invoices, Attention quotes & raw monthly data
+      const sixMonthsAgo = new Date();
+      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+      sixMonthsAgo.setDate(1);
+      sixMonthsAgo.setHours(0, 0, 0, 0);
+
+      const [
+        jobsByStatus,
+        invoicesByStatus,
+        acceptedQuotesRaw,
+        attentionQuotes,
+      ] = await Promise.all([
+        ctx.db.job.groupBy({
+          by: ["status"],
+          where: { organizationId: orgId },
+          _count: true,
+        }),
+        ctx.db.invoice.groupBy({
+          by: ["status"],
+          where: { organizationId: orgId },
+          _count: true,
+        }),
+        // Replace $queryRaw with regular Prisma query — avoids Prisma.sql
+        // bundling issues and works on all environments
+        ctx.db.quote.findMany({
+          where: {
+            organizationId: orgId,
+            status: "ACCEPTED",
+            createdAt: { gte: sixMonthsAgo },
+          },
+          select: { total: true, createdAt: true },
+        }),
+        ctx.db.quote.findMany({
+          where: {
+            organizationId: orgId,
+            status: { in: ["SENT", "VIEWED"] },
+          },
+          orderBy: { sentAt: "asc" },
+          take: 10,
+          select: {
+            id: true,
+            quoteNumber: true,
+            status: true,
+            sentAt: true,
+            viewedAt: true,
+            validUntil: true,
+            shareToken: true,
+            client: { select: { name: true, phone: true, email: true } },
+          },
+        }),
+      ]);
+
+      // Compute monthly revenue in JS (replaces $queryRaw / Prisma.sql)
+      const MONTH_LABELS = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ];
+      const monthMap = new Map<string, number>();
+      for (const q of acceptedQuotesRaw) {
+        const d = new Date(q.createdAt);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+        monthMap.set(key, (monthMap.get(key) ?? 0) + Number(q.total));
+      }
+      const monthlyRevenue = Array.from(monthMap.entries())
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([month, total]) => ({
+          month,
+          label: MONTH_LABELS[parseInt(month.split("-")[1]!) - 1] ?? month,
+          total,
+        }));
 
       // BATCH 4: Invoice Revenue
       const [invoicePaidTotal, invoiceOutstandingTotal] = await Promise.all([
