@@ -17,7 +17,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@fieldpro/ui/components/dialog";
-import { Plus, Trash2, DollarSign, Loader2, Target } from "lucide-react";
+import { Plus, Trash2, DollarSign, Loader2 } from "lucide-react";
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -89,8 +89,7 @@ export function JobExpenses({
   };
 
   const totalExpenses =
-    expenses?.reduce((sum: number, exp: any) => sum + Number(exp.amount), 0) ||
-    0;
+    expenses?.reduce((sum, exp) => sum + Number(exp.amount), 0) || 0;
 
   const profit = jobValue - totalExpenses;
   const profitMargin = jobValue > 0 ? (profit / jobValue) * 100 : 0;
@@ -161,7 +160,7 @@ export function JobExpenses({
           </div>
         ) : (
           <div className="divide-y rounded-md border">
-            {expenses?.map((expense: any) => {
+            {expenses?.map((expense) => {
               const catLabel =
                 expenseCategories.find((c) => c.value === expense.category)
                   ?.label || expense.category;
@@ -258,7 +257,12 @@ export function JobExpenses({
                 <select
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
                   value={category}
-                  onChange={(e) => setCategory(e.target.value as any)}
+                  onChange={(e) =>
+                    setCategory(
+                      e.target
+                        .value as (typeof expenseCategories)[number]["value"]
+                    )
+                  }
                 >
                   {expenseCategories.map((c) => (
                     <option key={c.value} value={c.value}>
