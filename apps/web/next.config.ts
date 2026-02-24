@@ -25,13 +25,15 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60,
   },
 
+  // Required for Prisma in pnpm monorepo: tells Next.js to trace files from repo root
+  // (moved out of experimental in Next.js 15)
+  outputFileTracingRoot: path.join(__dirname, "../../"),
+
   // Experimental features for performance
   experimental: {
     // Optimize package imports for faster dev
     // Note: @fieldpro/ui is already in transpilePackages — don't add it here
     optimizePackageImports: ["lucide-react"],
-    // Required for Prisma in pnpm monorepo: tells Next.js to trace files from repo root
-    outputFileTracingRoot: path.join(__dirname, "../../"),
   },
 
   // Compiler optimizations
