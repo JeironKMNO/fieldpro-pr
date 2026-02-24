@@ -6,7 +6,7 @@ import { router, protectedProcedure } from "../trpc";
 export const organizationRouter = router({
   current: protectedProcedure.query(async ({ ctx }) => {
     return ctx.db.organization.findFirst({
-      where: { clerkId: ctx.auth.organizationId },
+      where: { id: ctx.auth.organizationId },
       include: {
         _count: {
           select: { users: true, clients: true },
@@ -55,7 +55,7 @@ export const organizationRouter = router({
         invoicesByStatus,
         invoicePaidTotal,
         invoiceOutstandingTotal,
-      ] = await Promise.all([
+      ] = await ctx.db.$transaction([
         // 1. Quote counts by status
         ctx.db.quote.groupBy({
           by: ["status"],

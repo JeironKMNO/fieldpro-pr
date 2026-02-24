@@ -943,4 +943,76 @@ export const quoteRouter = router({
       await ctx.db.quote.delete({ where: { id: input.id } });
       return { success: true };
     }),
+
+  sendToClient: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        message: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const quote = await ctx.db.quote.findFirst({
+        where: { id: input.id, organizationId: ctx.auth.organizationId },
+        include: {
+          client: { select: { name: true, email: true } },
+          organization: { select: { name: true } },
+        },
+      });
+
+      if (!quote) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Cotización no encontrada",
+        });
+      }
+
+      if (!quote.client.email) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "El cliente no tiene dirección de email",
+        });
+      }
+
+      const APP_URL =
+        process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+      const shareUrl = `${APP_URL}/quotes/share/${quote.shareToken}`;
+
+      const total = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+      }).format(Number(quote.total));
+
+      // Send email
+      const { sendQuoteToClient } = await import("../services/email");
+      await sendQuoteToClient(
+        quote.client.email,
+        quote.client.name,
+        quote.quoteNumber,
+        quote.organization.name,
+        total,
+        shareUrl,
+        input.message
+      );
+
+      // Update status to SENT if it was DRAFT
+      if (quote.status === "DRAFT") {
+        await ctx.db.quote.update({
+          where: { id: input.id },
+          data: {
+            status: "SENT",
+            sentAt: new Date(),
+          },
+        });
+
+        await ctx.db.quoteActivity.create({
+          data: {
+            quoteId: input.id,
+            type: "SENT",
+          },
+        });
+      }
+
+      return { success: true };
+    }),
 });

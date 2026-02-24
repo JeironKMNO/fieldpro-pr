@@ -1,7 +1,12 @@
 "use client";
 
 import { cn } from "@fieldpro/ui/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle } from "@fieldpro/ui/components/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@fieldpro/ui/components/card";
 import { LucideIcon } from "lucide-react";
 
 interface KpiCardProps {
@@ -47,28 +52,31 @@ export function KpiCard({
   const styles = variantStyles[variant];
 
   return (
-    <Card className={cn(
-      "card-fieldpro transition-all duration-300",
-      styles.card
-    )}>
+    <Card
+      className={cn("card-fieldpro transition-all duration-300", styles.card)}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className={cn(
-            "text-sm font-medium flex items-center gap-2",
-            "text-stone-600"
-          )}>
+          <CardTitle
+            className={cn(
+              "text-sm font-medium flex items-center gap-2",
+              "text-stone-600"
+            )}
+          >
             <div className={cn("p-2 rounded-lg", styles.iconBg)}>
               <Icon className={cn("h-4 w-4", styles.iconColor)} />
             </div>
             {title}
           </CardTitle>
           {trend && (
-            <span className={cn(
-              "text-xs font-medium",
-              trend === "up" && "text-emerald-600",
-              trend === "down" && "text-red-500",
-              trend === "neutral" && "text-stone-400"
-            )}>
+            <span
+              className={cn(
+                "text-xs font-medium",
+                trend === "up" && "text-emerald-600",
+                trend === "down" && "text-red-500",
+                trend === "neutral" && "text-stone-400"
+              )}
+            >
               {trend === "up" && "↑"}
               {trend === "down" && "↓"}
               {trend === "neutral" && "→"}
@@ -77,7 +85,7 @@ export function KpiCard({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="font-display text-3xl font-semibold text-stone-900 tracking-tight">
+        <div className="text-3xl font-bold text-stone-900 tabular-nums tracking-tight">
           {value}
         </div>
         {description && (

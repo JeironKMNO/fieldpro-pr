@@ -34,24 +34,22 @@ export function NeedsAttention({ items }: { items: AttentionItem[] }) {
           {items.map((item) => (
             <div
               key={item.id}
-              className="flex items-center gap-3 rounded-xl bg-slate-950 border border-slate-800 p-4"
+              className="flex items-center gap-3 rounded-xl bg-white border border-slate-200 p-4 shadow-sm"
             >
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <Link
                     href={`/quotes/${item.id}`}
-                    className="font-medium text-sm text-slate-900 hover:text-orange-500 transition-colors"
+                    className="font-medium text-sm text-slate-800 hover:text-orange-500 transition-colors"
                   >
                     {item.quoteNumber}
                   </Link>
                   <QuoteStatusBadge status={item.status} />
                 </div>
-                <p className="text-sm text-slate-500 truncate">
+                <p className="text-sm text-slate-600 truncate">
                   {item.clientName}
                 </p>
-                <p className="text-xs text-orange-400/80 mt-1">
-                  {item.reason}
-                </p>
+                <p className="text-xs text-orange-400/80 mt-1">{item.reason}</p>
               </div>
               <div className="flex gap-1 shrink-0">
                 {item.clientPhone ? (
@@ -85,7 +83,11 @@ export function NeedsAttention({ items }: { items: AttentionItem[] }) {
                   </a>
                 ) : null}
                 <Link href={`/quotes/${item.id}`}>
-                  <Button variant="ghost" size="icon" className="h-9 w-9 text-slate-500 hover:text-slate-900 hover:bg-slate-800">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 text-slate-500 hover:text-slate-900 hover:bg-slate-800"
+                  >
                     <ExternalLink className="h-4 w-4" />
                   </Button>
                 </Link>

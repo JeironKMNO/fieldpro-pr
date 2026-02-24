@@ -50,7 +50,9 @@ export function RecentQuotesTable({ quotes }: { quotes: RecentQuote[] }) {
   return (
     <Card className="h-full border-slate-200 bg-white">
       <CardHeader className="flex flex-row items-center justify-between pb-4">
-        <CardTitle className="text-base text-slate-900">Cotizaciones Recientes</CardTitle>
+        <CardTitle className="text-base text-slate-900">
+          Cotizaciones Recientes
+        </CardTitle>
         <Link
           href="/quotes"
           className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900 transition-colors"
@@ -66,16 +68,21 @@ export function RecentQuotesTable({ quotes }: { quotes: RecentQuote[] }) {
         ) : (
           <Table>
             <TableHeader>
-              <TableRow className="border-slate-800 hover:bg-transparent">
+              <TableRow className="border-slate-200 hover:bg-transparent">
                 <TableHead className="w-[100px] text-slate-500">#</TableHead>
                 <TableHead className="text-slate-500">Cliente</TableHead>
                 <TableHead className="text-slate-500">Estado</TableHead>
-                <TableHead className="text-right text-slate-500">Total</TableHead>
+                <TableHead className="text-right text-slate-500">
+                  Total
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {quotes.map((q) => (
-                <TableRow key={q.id} className="border-slate-800 hover:bg-slate-800/50">
+                <TableRow
+                  key={q.id}
+                  className="border-slate-100 hover:bg-slate-50"
+                >
                   <TableCell>
                     <Link
                       href={`/quotes/${q.id}`}
@@ -86,7 +93,9 @@ export function RecentQuotesTable({ quotes }: { quotes: RecentQuote[] }) {
                   </TableCell>
                   <TableCell>
                     <div>
-                      <span className="font-medium text-slate-900">{q.clientName}</span>
+                      <span className="font-medium text-slate-900">
+                        {q.clientName}
+                      </span>
                       <span className="ml-2 text-xs text-slate-500">
                         {timeAgo(q.createdAt)}
                       </span>

@@ -34,7 +34,9 @@ export function RecentClients({ clients }: { clients: RecentClient[] }) {
   return (
     <Card className="h-full border-slate-200 bg-white">
       <CardHeader className="flex flex-row items-center justify-between pb-4">
-        <CardTitle className="text-base text-slate-900">Clientes Recientes</CardTitle>
+        <CardTitle className="text-base text-slate-900">
+          Clientes Recientes
+        </CardTitle>
         <Link
           href="/clients"
           className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900 transition-colors"
@@ -52,12 +54,12 @@ export function RecentClients({ clients }: { clients: RecentClient[] }) {
             {clients.map((c) => (
               <div
                 key={c.id}
-                className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950 p-4"
+                className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-4 hover:bg-slate-100 transition-colors"
               >
                 <div className="space-y-1">
                   <Link
                     href={`/clients/${c.id}`}
-                    className="font-medium text-slate-900 hover:text-orange-500 transition-colors"
+                    className="font-medium text-slate-800 hover:text-orange-500 transition-colors"
                   >
                     {c.name}
                   </Link>
