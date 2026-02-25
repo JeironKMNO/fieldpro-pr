@@ -42,14 +42,22 @@ export async function GET() {
     checks.clerk = `error: ${err instanceof Error ? err.message : String(err)}`;
   }
 
-  // 4. Environment variables check (names only, not values)
+  // 4. Environment variables check — use bracket notation to avoid Next.js
+  // build-time inlining, which would show stale values from the build env.
+  const env = process.env as Record<string, string | undefined>;
+  const dbUrl = env["DATABASE_URL"] ?? "";
+  const directUrl = env["DIRECT_URL"] ?? "";
   checks.env = {
-    DATABASE_URL: !!process.env.DATABASE_URL,
-    DIRECT_URL: !!process.env.DIRECT_URL,
-    CLERK_SECRET_KEY: !!process.env.CLERK_SECRET_KEY,
-    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
-      !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
-    NODE_ENV: process.env.NODE_ENV,
+    DATABASE_URL: !!dbUrl,
+    DATABASE_URL_length: dbUrl.length,
+    DATABASE_URL_prefix: dbUrl.substring(0, 15) || "(empty)",
+    DIRECT_URL: !!directUrl,
+    DIRECT_URL_length: directUrl.length,
+    CLERK_SECRET_KEY: !!(env["CLERK_SECRET_KEY"] ?? ""),
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: !!(
+      env["NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY"] ?? ""
+    ),
+    NODE_ENV: env["NODE_ENV"],
   };
 
   const hasError = Object.values(checks).some(
