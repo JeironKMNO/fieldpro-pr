@@ -11,7 +11,13 @@ export const jobRouter = router({
         limit: z.number().min(1).max(100).default(20),
         search: z.string().optional(),
         status: z
-          .enum(["SCHEDULED", "IN_PROGRESS", "ON_HOLD", "COMPLETED", "CANCELLED"])
+          .enum([
+            "SCHEDULED",
+            "IN_PROGRESS",
+            "ON_HOLD",
+            "COMPLETED",
+            "CANCELLED",
+          ])
           .optional(),
         clientId: z.string().optional(),
         sortBy: z
@@ -21,7 +27,8 @@ export const jobRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
-      const { page, limit, search, status, clientId, sortBy, sortOrder } = input;
+      const { page, limit, search, status, clientId, sortBy, sortOrder } =
+        input;
       const skip = (page - 1) * limit;
 
       const where: Prisma.JobWhereInput = {
@@ -104,7 +111,12 @@ export const jobRouter = router({
             select: { name: true },
           },
           invoice: {
-            select: { id: true, invoiceNumber: true, status: true, total: true },
+            select: {
+              id: true,
+              invoiceNumber: true,
+              status: true,
+              total: true,
+            },
           },
           tasks: { orderBy: { sortOrder: "asc" } },
           changeOrders: { orderBy: { createdAt: "asc" } },
@@ -274,5 +286,91 @@ export const jobRouter = router({
         where: { id: input.id },
         data,
       });
+    }),
+
+  setBudget: protectedProcedure
+    .input(
+      z.object({
+        jobId: z.string(),
+        materialBudget: z.number().min(0),
+        operationalBudget: z.number().min(0),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const job = await ctx.db.job.findFirst({
+        where: { id: input.jobId, organizationId: ctx.auth.organizationId },
+      });
+      if (!job) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Job not found" });
+      }
+      return ctx.db.job.update({
+        where: { id: input.jobId },
+        data: {
+          materialBudget: input.materialBudget,
+          operationalBudget: input.operationalBudget,
+        },
+      });
+    }),
+
+  budgetSummary: protectedProcedure
+    .input(z.object({ jobId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const orgId = ctx.auth.organizationId;
+      const [job, materialAgg, operationalAgg] = await Promise.all([
+        ctx.db.job.findFirst({
+          where: { id: input.jobId, organizationId: orgId },
+          select: {
+            value: true,
+            materialBudget: true,
+            operationalBudget: true,
+          },
+        }),
+        ctx.db.expense.aggregate({
+          where: {
+            jobId: input.jobId,
+            organizationId: orgId,
+            category: "MATERIAL",
+          },
+          _sum: { amount: true },
+        }),
+        ctx.db.expense.aggregate({
+          where: {
+            jobId: input.jobId,
+            organizationId: orgId,
+            category: { not: "MATERIAL" },
+          },
+          _sum: { amount: true },
+        }),
+      ]);
+
+      if (!job) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Job not found" });
+      }
+
+      const totalQuotedAmount = Number(job.value);
+      const materialBudget = Number(job.materialBudget);
+      const operationalBudget = Number(job.operationalBudget);
+      const materialSpent = Number(materialAgg._sum.amount ?? 0);
+      const operationalSpent = Number(operationalAgg._sum.amount ?? 0);
+      const totalSpent = materialSpent + operationalSpent;
+      const grossProfit = totalQuotedAmount - totalSpent;
+
+      return {
+        totalQuotedAmount,
+        materialBudget,
+        operationalBudget,
+        materialSpent,
+        operationalSpent,
+        totalSpent,
+        grossProfit,
+        profitMarginPercent:
+          totalQuotedAmount > 0 ? (grossProfit / totalQuotedAmount) * 100 : 0,
+        status:
+          grossProfit > 0
+            ? "PROFITABLE"
+            : grossProfit === 0
+              ? "BREAK_EVEN"
+              : "LOSS",
+      };
     }),
 });

@@ -21,6 +21,7 @@ import {
 import { KpiCard } from "./kpi-card";
 import { QuotePipeline } from "./quote-pipeline";
 import { RevenueChart } from "./revenue-chart";
+import { ProfitMarginCard } from "./profit-margin-card";
 import { RecentQuotesTable } from "./recent-quotes-table";
 import { RecentClients } from "./recent-clients";
 import { NeedsAttention } from "./needs-attention";
@@ -194,8 +195,11 @@ export function DashboardContent() {
           counts={data.quoteCounts}
           total={data.quoteCounts.total}
         />
-        <RevenueChart data={data.monthlyRevenue} />
+        <RevenueChart data={data.monthlyFinancials} />
       </div>
+
+      {/* Row 2b: Profit Margin */}
+      <ProfitMarginCard profitMetrics={data.profitMetrics} />
 
       {/* Row 3: Recent Quotes + Recent Clients */}
       <div className="grid gap-4 md:grid-cols-2">

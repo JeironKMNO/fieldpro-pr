@@ -200,6 +200,107 @@ export const organizationRouter = router({
         }),
       ]);
 
+      // BATCH 5: Monthly financials & profit metrics
+      const [
+        paidInvoicesRaw,
+        expensesRaw,
+        completedJobsAgg,
+        totalPaidInvoicesAgg,
+        totalExpensesAgg,
+      ] = await Promise.all([
+        ctx.db.invoice.findMany({
+          where: {
+            organizationId: orgId,
+            status: "PAID",
+            paidAt: { gte: sixMonthsAgo },
+          },
+          select: { total: true, paidAt: true },
+        }),
+        ctx.db.expense.findMany({
+          where: {
+            organizationId: orgId,
+            date: { gte: sixMonthsAgo },
+          },
+          select: { amount: true, date: true },
+        }),
+        ctx.db.job.aggregate({
+          where: { organizationId: orgId, status: "COMPLETED" },
+          _sum: { value: true },
+        }),
+        ctx.db.invoice.aggregate({
+          where: { organizationId: orgId, status: "PAID" },
+          _sum: { total: true },
+        }),
+        ctx.db.expense.aggregate({
+          where: { organizationId: orgId },
+          _sum: { amount: true },
+        }),
+      ]);
+
+      // Generate last 6 month keys (YYYY-MM) in chronological order
+      const MONTH_LABELS_ES: Record<string, string> = {
+        "01": "Ene",
+        "02": "Feb",
+        "03": "Mar",
+        "04": "Abr",
+        "05": "May",
+        "06": "Jun",
+        "07": "Jul",
+        "08": "Ago",
+        "09": "Sep",
+        "10": "Oct",
+        "11": "Nov",
+        "12": "Dic",
+      };
+      const last6Months: string[] = [];
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date();
+        d.setMonth(d.getMonth() - i);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+        last6Months.push(key);
+      }
+
+      const invoiceByMonth = new Map<string, number>();
+      for (const inv of paidInvoicesRaw) {
+        if (!inv.paidAt) continue;
+        const d = new Date(inv.paidAt);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+        invoiceByMonth.set(
+          key,
+          (invoiceByMonth.get(key) ?? 0) + Number(inv.total)
+        );
+      }
+
+      const expenseByMonth = new Map<string, number>();
+      for (const exp of expensesRaw) {
+        const d = new Date(exp.date);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+        expenseByMonth.set(
+          key,
+          (expenseByMonth.get(key) ?? 0) + Number(exp.amount)
+        );
+      }
+
+      const monthlyFinancials = last6Months.map((month) => ({
+        month,
+        label: MONTH_LABELS_ES[month.split("-")[1]!] ?? month,
+        invoiceRevenue: invoiceByMonth.get(month) ?? 0,
+        expenses: expenseByMonth.get(month) ?? 0,
+      }));
+
+      const totalPaidInv = Number(totalPaidInvoicesAgg._sum.total ?? 0);
+      const totalExp = Number(totalExpensesAgg._sum.amount ?? 0);
+      const profitMetrics = {
+        completedJobValue: Number(completedJobsAgg._sum.value ?? 0),
+        totalExpenses: totalExp,
+        totalPaidInvoices: totalPaidInv,
+        netProfit: totalPaidInv - totalExp,
+        profitMargin:
+          totalPaidInv > 0
+            ? ((totalPaidInv - totalExp) / totalPaidInv) * 100
+            : 0,
+      };
+
       // Build quote counts map
       const qcMap = Object.fromEntries(
         quotesByStatus.map((g) => [g.status, g._count])
@@ -294,6 +395,8 @@ export const organizationRouter = router({
           paid: Number(invoicePaidTotal._sum.total ?? 0),
           outstanding: Number(invoiceOutstandingTotal._sum.total ?? 0),
         },
+        monthlyFinancials,
+        profitMetrics,
         needsAttention: attentionQuotes
           .map((q) => {
             const now = new Date();

@@ -366,7 +366,17 @@ export function JobDetail({ initialJob }: { initialJob: { id: string } }) {
           <JobTasks jobId={job.id} />
 
           {/* Gastos y Ganancia */}
-          <JobExpenses jobId={job.id} jobValue={Number(job.value)} />
+          <JobExpenses
+            jobId={job.id}
+            jobValue={Number(job.value)}
+            jobStatus={job.status}
+            materialBudget={Number(
+              (job as { materialBudget?: unknown }).materialBudget ?? 0
+            )}
+            operationalBudget={Number(
+              (job as { operationalBudget?: unknown }).operationalBudget ?? 0
+            )}
+          />
 
           {/* Órdenes de Cambio */}
           <ChangeOrders jobId={job.id} jobValue={Number(job.value)} />

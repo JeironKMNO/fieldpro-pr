@@ -424,8 +424,10 @@ model Job {
   scheduledDate DateTime?
   startedAt     DateTime?
   completedAt   DateTime?
-  notes         String?   @db.Text
-  value         Decimal   @default(0) @db.Decimal(12, 2)
+  notes             String?   @db.Text
+  value             Decimal   @default(0) @db.Decimal(12, 2)
+  materialBudget    Decimal   @default(0) @db.Decimal(12, 2)
+  operationalBudget Decimal   @default(0) @db.Decimal(12, 2)
 
   invoice      Invoice?
   materialList MaterialList?
