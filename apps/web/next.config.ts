@@ -33,6 +33,16 @@ const nextConfig: NextConfig = {
   // binary (.so.node) is resolved at runtime, not from inside a webpack chunk
   serverExternalPackages: ["@prisma/client", ".prisma/client"],
 
+  // Explicitly include Prisma native binary in Vercel deployment bundle.
+  // pnpm stores the binary deep in node_modules/.pnpm — Next.js file tracing
+  // doesn't always pick it up automatically in monorepos.
+  outputFileTracingIncludes: {
+    "/**": [
+      "../../node_modules/.pnpm/@prisma+client@*/node_modules/.prisma/client/*.node",
+      "../../node_modules/.pnpm/@prisma+client@*/node_modules/.prisma/client/schema.prisma",
+    ],
+  },
+
   // Experimental features for performance
   experimental: {
     // Optimize package imports for faster dev
