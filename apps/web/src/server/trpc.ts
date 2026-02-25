@@ -23,7 +23,7 @@ const enforceAuth = t.middleware(async ({ ctx, next }) => {
   // Auto-sync: ensure Organization exists in DB
   const org = await ctx.db.organization.upsert({
     where: { clerkId: ctx.auth.organizationId },
-    update: {},
+    update: { slug: ctx.auth.organizationSlug ?? ctx.auth.organizationId },
     create: {
       clerkId: ctx.auth.organizationId,
       name: ctx.auth.organizationName ?? "My Organization",
