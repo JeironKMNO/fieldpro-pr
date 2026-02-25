@@ -5,9 +5,6 @@ const nextConfig: NextConfig = {
   // Transpile UI packages
   transpilePackages: ["@fieldpro/ui", "@fieldpro/db", "@fieldpro/types"],
 
-  // Standalone output for Docker/Render deployments
-  output: "standalone",
-
   // Image optimization
   images: {
     remotePatterns: [
