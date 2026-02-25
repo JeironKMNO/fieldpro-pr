@@ -9,110 +9,175 @@ import {
   StyleSheet,
 } from "@react-pdf/renderer";
 
+// ─── Design system ───────────────────────────────────────────────
+// Primary dark: #0f172a   Accent emerald: #10b981
+// Table header: #1e293b   Alt row: #f8fafc
+// Total highlight: #ecfdf5  Total value: #10b981
+// Labels: #64748b         Body: #0f172a
+// ─────────────────────────────────────────────────────────────────
+
+const PAGE_PADDING = 40;
+
 const styles = StyleSheet.create({
   page: {
-    padding: 40,
+    paddingHorizontal: PAGE_PADDING,
+    paddingTop: 0,
+    paddingBottom: 40,
     fontSize: 10,
     fontFamily: "Helvetica",
-    color: "#1a1a1a",
+    color: "#0f172a",
   },
-  header: {
+  // ── Header band ──
+  headerBand: {
+    backgroundColor: "#0f172a",
+    marginHorizontal: -PAGE_PADDING,
+    paddingHorizontal: PAGE_PADDING,
+    paddingVertical: 22,
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 16,
+    alignItems: "center",
   },
   headerLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    gap: 12,
   },
   logo: {
-    width: 50,
-    height: 50,
+    width: 44,
+    height: 44,
     objectFit: "contain",
+    backgroundColor: "#ffffff",
+    borderRadius: 4,
   },
   companyName: {
-    fontSize: 18,
+    fontSize: 19,
     fontFamily: "Helvetica-Bold",
-    color: "#1e40af",
+    color: "#ffffff",
   },
   companyDetail: {
     fontSize: 8,
-    color: "#6b7280",
-    marginTop: 2,
+    color: "#94a3b8",
+    marginTop: 3,
+  },
+  headerRight: {
+    alignItems: "flex-end",
+  },
+  cotizacionLabel: {
+    fontSize: 9,
+    fontFamily: "Helvetica-Bold",
+    color: "#10b981",
+    textTransform: "uppercase",
+    letterSpacing: 1.5,
+    marginBottom: 4,
   },
   quoteNumber: {
-    fontSize: 16,
+    fontSize: 22,
     fontFamily: "Helvetica-Bold",
-    textAlign: "right",
-  },
-  quoteTitle: {
-    fontSize: 10,
-    color: "#6b7280",
-    textAlign: "right",
-    marginTop: 2,
+    color: "#ffffff",
   },
   dateText: {
-    fontSize: 9,
-    color: "#6b7280",
-    textAlign: "right",
-    marginTop: 4,
+    fontSize: 8,
+    color: "#94a3b8",
+    marginTop: 3,
   },
-  separator: {
+  // ── Accent stripe ──
+  accentStripe: {
+    height: 3,
+    backgroundColor: "#10b981",
+    marginHorizontal: -PAGE_PADDING,
+    marginBottom: 18,
+  },
+  // ── Client / meta block ──
+  clientMetaBlock: {
+    flexDirection: "row",
+    paddingBottom: 14,
     borderBottomWidth: 1,
-    borderBottomColor: "#e5e7eb",
-    marginVertical: 12,
+    borderBottomColor: "#10b981",
+    marginBottom: 18,
+  },
+  clientCol: {
+    flex: 6,
+  },
+  metaCol: {
+    flex: 4,
+    alignItems: "flex-end",
   },
   billToLabel: {
-    fontSize: 8,
+    fontSize: 7,
     fontFamily: "Helvetica-Bold",
-    color: "#6b7280",
+    color: "#64748b",
     textTransform: "uppercase",
-    letterSpacing: 1,
+    letterSpacing: 1.2,
+    marginBottom: 5,
   },
   clientName: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: "Helvetica-Bold",
-    marginTop: 4,
+    color: "#0f172a",
+    marginBottom: 2,
   },
   clientInfo: {
     fontSize: 9,
-    color: "#6b7280",
-    marginTop: 2,
+    color: "#64748b",
+    marginTop: 1,
   },
-  sectionTitle: {
-    fontSize: 11,
+  metaLabel: {
+    fontSize: 7,
     fontFamily: "Helvetica-Bold",
-    color: "#1e40af",
+    color: "#64748b",
     textTransform: "uppercase",
-    letterSpacing: 0.5,
+    letterSpacing: 1,
+    marginBottom: 3,
+    marginTop: 6,
+  },
+  metaValue: {
+    fontSize: 9,
+    color: "#0f172a",
+  },
+  // ── Section titles ──
+  sectionTitle: {
+    fontSize: 10,
+    fontFamily: "Helvetica-Bold",
+    color: "#0f172a",
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
     marginBottom: 4,
-    marginTop: 16,
+    marginTop: 18,
+    borderLeftWidth: 3,
+    borderLeftColor: "#10b981",
+    paddingLeft: 8,
   },
   sectionDescription: {
     fontSize: 9,
     color: "#4b5563",
     marginBottom: 6,
     lineHeight: 1.4,
+    paddingLeft: 11,
   },
-  tableHeader: {
+  // ── Table ──
+  tableHeaderRow: {
     flexDirection: "row",
-    borderBottomWidth: 1,
-    borderBottomColor: "#d1d5db",
-    paddingBottom: 4,
-    marginBottom: 4,
+    backgroundColor: "#1e293b",
+    paddingVertical: 6,
+    paddingHorizontal: 4,
+    marginBottom: 0,
   },
   tableHeaderText: {
     fontSize: 8,
     fontFamily: "Helvetica-Bold",
-    color: "#6b7280",
+    color: "#ffffff",
   },
-  tableRow: {
+  tableRowEven: {
     flexDirection: "row",
-    borderBottomWidth: 0.5,
-    borderBottomColor: "#e5e7eb",
-    borderStyle: "dashed",
-    paddingVertical: 4,
+    backgroundColor: "#f8fafc",
+    paddingVertical: 5,
+    paddingHorizontal: 4,
+  },
+  tableRowOdd: {
+    flexDirection: "row",
+    backgroundColor: "#ffffff",
+    paddingVertical: 5,
+    paddingHorizontal: 4,
   },
   colDescription: { flex: 3 },
   colQty: { width: 55, textAlign: "right" },
@@ -123,15 +188,19 @@ const styles = StyleSheet.create({
     fontSize: 8,
     color: "#9ca3af",
   },
+  // ── Section subtotal ──
   sectionSubtotalRow: {
     flexDirection: "row",
     justifyContent: "flex-end",
     paddingTop: 6,
     paddingBottom: 2,
+    borderTopWidth: 0.5,
+    borderTopColor: "#e2e8f0",
   },
   sectionSubtotalLabel: {
     fontSize: 9,
     fontFamily: "Helvetica-Bold",
+    color: "#64748b",
     marginRight: 8,
   },
   sectionSubtotalValue: {
@@ -139,37 +208,60 @@ const styles = StyleSheet.create({
     fontFamily: "Helvetica-Bold",
     width: 70,
     textAlign: "right",
+    color: "#0f172a",
   },
+  // ── Totals ──
   totalsContainer: {
-    marginTop: 20,
+    marginTop: 24,
     alignItems: "flex-end",
   },
   totalsRow: {
     flexDirection: "row",
-    justifyContent: "flex-end",
-    width: 200,
-    marginBottom: 3,
+    width: 220,
+    marginBottom: 4,
   },
   totalsLabel: {
     flex: 1,
     textAlign: "right",
     paddingRight: 12,
-    fontSize: 10,
+    fontSize: 9,
+    color: "#64748b",
   },
   totalsValue: {
     width: 80,
     textAlign: "right",
-    fontSize: 10,
+    fontSize: 9,
+    color: "#0f172a",
   },
-  totalFinal: {
-    fontFamily: "Helvetica-Bold",
-    fontSize: 14,
+  totalHighlightRow: {
+    flexDirection: "row",
+    backgroundColor: "#ecfdf5",
+    borderRadius: 4,
+    width: 220,
+    paddingVertical: 9,
+    paddingHorizontal: 10,
     marginTop: 4,
   },
+  totalLabel: {
+    flex: 1,
+    textAlign: "right",
+    paddingRight: 12,
+    fontSize: 14,
+    fontFamily: "Helvetica-Bold",
+    color: "#0f172a",
+  },
+  totalValue: {
+    width: 80,
+    textAlign: "right",
+    fontSize: 16,
+    fontFamily: "Helvetica-Bold",
+    color: "#10b981",
+  },
+  // ── Notes ──
   termsLabel: {
     fontSize: 8,
     fontFamily: "Helvetica-Bold",
-    color: "#6b7280",
+    color: "#64748b",
     textTransform: "uppercase",
     letterSpacing: 1,
     marginTop: 24,
@@ -177,17 +269,24 @@ const styles = StyleSheet.create({
   },
   termsText: {
     fontSize: 9,
-    color: "#6b7280",
+    color: "#64748b",
     lineHeight: 1.4,
   },
+  // ── Footer ──
   footer: {
     position: "absolute",
-    bottom: 20,
-    left: 40,
-    right: 40,
-    textAlign: "center",
+    bottom: 16,
+    left: PAGE_PADDING,
+    right: PAGE_PADDING,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    borderTopWidth: 0.5,
+    borderTopColor: "#e2e8f0",
+    paddingTop: 4,
+  },
+  footerText: {
     fontSize: 7,
-    color: "#9ca3af",
+    color: "#94a3b8",
   },
 });
 
@@ -200,9 +299,21 @@ const UNIT_LABELS: Record<string, string> = {
   LUMP_SUM: "global",
 };
 
-const ROMAN_NUMERALS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
+const ROMAN_NUMERALS = [
+  "I",
+  "II",
+  "III",
+  "IV",
+  "V",
+  "VI",
+  "VII",
+  "VIII",
+  "IX",
+  "X",
+  "XI",
+  "XII",
+];
 
-/** Descripciones detalladas por etapa para el PDF */
 const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   Demolicion:
     "Trabajos de demolición y preparación del área incluyendo remoción de estructuras existentes, disposición de escombros y limpieza del terreno para iniciar la nueva construcción.",
@@ -214,15 +325,15 @@ const CATEGORY_DESCRIPTIONS: Record<string, string> = {
     "Sistema eléctrico completo incluyendo paneles, cableado, tomacorrientes, interruptores, luminarias y conexiones según código eléctrico vigente.",
   Techado:
     "Trabajos de techado y protección exterior incluyendo estructura, impermeabilización, aislamiento y acabados de cubierta.",
-  Piso:
-    "Instalación de pisos y superficies incluyendo preparación de base, material de piso seleccionado, mortero, sellador y acabado final.",
+  Piso: "Instalación de pisos y superficies incluyendo preparación de base, material de piso seleccionado, mortero, sellador y acabado final.",
   Pintura:
     "Trabajos de pintura y acabados de superficie incluyendo preparación, sellador, primer, pintura de acabado y recubrimientos protectores.",
   Acabados:
     "Acabados finales y detalles del proyecto incluyendo molduras, zócalos, herrajes y elementos decorativos.",
   "Ventanas/Puertas":
     "Instalación de ventanas y puertas incluyendo marcos, herrajes, sellado contra intemperie y ajustes finales.",
-  Otros: "Trabajos adicionales especializados según se describe a continuación.",
+  Otros:
+    "Trabajos adicionales especializados según se describe a continuación.",
 };
 
 function fmt(value: unknown): string {
@@ -296,16 +407,12 @@ export function QuotePdfDocument({ quote }: { quote: PdfQuote }) {
   return (
     <Document>
       <Page size="LETTER" style={styles.page}>
-        {/* Header */}
-        <View style={styles.header}>
+        {/* ── Dark header band ── */}
+        <View style={styles.headerBand}>
           <View style={styles.headerLeft}>
-            {logoUrl ? (
-              <Image src={logoUrl} style={styles.logo} />
-            ) : null}
+            {logoUrl ? <Image src={logoUrl} style={styles.logo} /> : null}
             <View>
-              <Text style={styles.companyName}>
-                {quote.organization.name}
-              </Text>
+              <Text style={styles.companyName}>{quote.organization.name}</Text>
               {hasCompanyDetails ? (
                 <Text style={styles.companyDetail}>
                   {[
@@ -313,19 +420,15 @@ export function QuotePdfDocument({ quote }: { quote: PdfQuote }) {
                     phone ? `Tel. ${phone}` : null,
                   ]
                     .filter(Boolean)
-                    .join(" | ")}
+                    .join("  |  ")}
                 </Text>
               ) : null}
             </View>
           </View>
-          <View>
+          <View style={styles.headerRight}>
+            <Text style={styles.cotizacionLabel}>Cotización</Text>
             <Text style={styles.quoteNumber}>{quote.quoteNumber}</Text>
-            {quote.title ? (
-              <Text style={styles.quoteTitle}>{quote.title}</Text>
-            ) : null}
-            <Text style={styles.dateText}>
-              Fecha: {fmtDate(quote.createdAt)}
-            </Text>
+            <Text style={styles.dateText}>{fmtDate(quote.createdAt)}</Text>
             {quote.validUntil ? (
               <Text style={styles.dateText}>
                 Válida hasta: {fmtDate(quote.validUntil)}
@@ -334,31 +437,51 @@ export function QuotePdfDocument({ quote }: { quote: PdfQuote }) {
           </View>
         </View>
 
-        <View style={styles.separator} />
+        {/* ── Emerald accent stripe ── */}
+        <View style={styles.accentStripe} />
 
-        {/* Bill To */}
-        <View>
-          <Text style={styles.billToLabel}>Cliente</Text>
-          <Text style={styles.clientName}>{quote.client.name}</Text>
-          {quote.client.email ? (
-            <Text style={styles.clientInfo}>{quote.client.email}</Text>
-          ) : null}
-          {quote.client.phone ? (
-            <Text style={styles.clientInfo}>{quote.client.phone}</Text>
-          ) : null}
-          {address ? (
-            <Text style={styles.clientInfo}>
-              {address.street}, {address.city}, {address.state}{" "}
-              {address.zipCode}
-            </Text>
-          ) : null}
+        {/* ── Client info + meta ── */}
+        <View style={styles.clientMetaBlock}>
+          <View style={styles.clientCol}>
+            <Text style={styles.billToLabel}>Facturar a</Text>
+            <Text style={styles.clientName}>{quote.client.name}</Text>
+            {quote.client.email ? (
+              <Text style={styles.clientInfo}>{quote.client.email}</Text>
+            ) : null}
+            {quote.client.phone ? (
+              <Text style={styles.clientInfo}>{quote.client.phone}</Text>
+            ) : null}
+            {address ? (
+              <Text style={styles.clientInfo}>
+                {address.street}, {address.city}, {address.state}{" "}
+                {address.zipCode}
+              </Text>
+            ) : null}
+          </View>
+          <View style={styles.metaCol}>
+            {quote.title ? (
+              <>
+                <Text style={styles.metaLabel}>Proyecto</Text>
+                <Text style={styles.metaValue}>{quote.title}</Text>
+              </>
+            ) : null}
+            <Text style={styles.metaLabel}>Fecha</Text>
+            <Text style={styles.metaValue}>{fmtDate(quote.createdAt)}</Text>
+            {quote.validUntil ? (
+              <>
+                <Text style={styles.metaLabel}>Válida hasta</Text>
+                <Text style={styles.metaValue}>
+                  {fmtDate(quote.validUntil)}
+                </Text>
+              </>
+            ) : null}
+          </View>
         </View>
 
-        {/* Etapas del Proyecto */}
+        {/* ── Sections ── */}
         {quote.sections.map((section, sectionIndex) => {
           const categoryName = section.category.name;
-          const description =
-            CATEGORY_DESCRIPTIONS[categoryName] ?? null;
+          const description = CATEGORY_DESCRIPTIONS[categoryName] ?? null;
 
           return (
             <View key={section.id} wrap={false}>
@@ -366,18 +489,13 @@ export function QuotePdfDocument({ quote }: { quote: PdfQuote }) {
                 {toRoman(sectionIndex)}. {categoryName}
               </Text>
 
-              {/* Descripción de la etapa */}
               {description ? (
-                <Text style={styles.sectionDescription}>
-                  {description}
-                </Text>
+                <Text style={styles.sectionDescription}>{description}</Text>
               ) : null}
 
-              {/* Encabezado de tabla */}
-              <View style={styles.tableHeader}>
-                <Text
-                  style={[styles.tableHeaderText, styles.colDescription]}
-                >
+              {/* Table header */}
+              <View style={styles.tableHeaderRow}>
+                <Text style={[styles.tableHeaderText, styles.colDescription]}>
                   Descripción
                 </Text>
                 <Text style={[styles.tableHeaderText, styles.colQty]}>
@@ -394,13 +512,19 @@ export function QuotePdfDocument({ quote }: { quote: PdfQuote }) {
                 </Text>
               </View>
 
-              {/* Items */}
-              {section.items.map((item) => (
-                <View key={item.id} style={styles.tableRow}>
+              {/* Rows */}
+              {section.items.map((item, rowIndex) => (
+                <View
+                  key={item.id}
+                  style={
+                    rowIndex % 2 === 0
+                      ? styles.tableRowEven
+                      : styles.tableRowOdd
+                  }
+                >
                   <View style={styles.colDescription}>
                     <Text>{item.description}</Text>
-                    {Number(item.length) > 0 &&
-                    Number(item.width) > 0 ? (
+                    {Number(item.length) > 0 && Number(item.width) > 0 ? (
                       <Text style={styles.dimText}>
                         ({Number(item.length)} x {Number(item.width)} p²)
                       </Text>
@@ -412,24 +536,19 @@ export function QuotePdfDocument({ quote }: { quote: PdfQuote }) {
                   <Text style={styles.colUnit}>
                     {UNIT_LABELS[item.unitType] ?? item.unitType}
                   </Text>
-                  <Text style={styles.colPrice}>
-                    {fmt(item.unitPrice)}
-                  </Text>
+                  <Text style={styles.colPrice}>{fmt(item.unitPrice)}</Text>
                   <Text
-                    style={[
-                      styles.colTotal,
-                      { fontFamily: "Helvetica-Bold" },
-                    ]}
+                    style={[styles.colTotal, { fontFamily: "Helvetica-Bold" }]}
                   >
                     {fmt(item.total)}
                   </Text>
                 </View>
               ))}
 
-              {/* Subtotal de la etapa */}
+              {/* Section subtotal */}
               <View style={styles.sectionSubtotalRow}>
                 <Text style={styles.sectionSubtotalLabel}>
-                  Subtotal Etapa {toRoman(sectionIndex)}:
+                  Subtotal {toRoman(sectionIndex)}:
                 </Text>
                 <Text style={styles.sectionSubtotalValue}>
                   {fmt(section.subtotal)}
@@ -439,9 +558,7 @@ export function QuotePdfDocument({ quote }: { quote: PdfQuote }) {
           );
         })}
 
-        <View style={styles.separator} />
-
-        {/* Totals */}
+        {/* ── Totals ── */}
         <View style={styles.totalsContainer}>
           <View style={styles.totalsRow}>
             <Text style={styles.totalsLabel}>Subtotal</Text>
@@ -451,22 +568,15 @@ export function QuotePdfDocument({ quote }: { quote: PdfQuote }) {
             <Text style={styles.totalsLabel}>
               IVU ({(Number(quote.taxRate) * 100).toFixed(1)}%)
             </Text>
-            <Text style={styles.totalsValue}>
-              {fmt(quote.taxAmount)}
-            </Text>
+            <Text style={styles.totalsValue}>{fmt(quote.taxAmount)}</Text>
           </View>
-          <View style={styles.separator} />
-          <View style={styles.totalsRow}>
-            <Text style={[styles.totalsLabel, styles.totalFinal]}>
-              Total
-            </Text>
-            <Text style={[styles.totalsValue, styles.totalFinal]}>
-              {fmt(quote.total)}
-            </Text>
+          <View style={styles.totalHighlightRow}>
+            <Text style={styles.totalLabel}>Total</Text>
+            <Text style={styles.totalValue}>{fmt(quote.total)}</Text>
           </View>
         </View>
 
-        {/* Notas y Condiciones */}
+        {/* ── Notes ── */}
         {quote.notes ? (
           <View>
             <Text style={styles.termsLabel}>Notas y Condiciones</Text>
@@ -474,10 +584,20 @@ export function QuotePdfDocument({ quote }: { quote: PdfQuote }) {
           </View>
         ) : null}
 
-        {/* Footer */}
-        <Text style={styles.footer}>
-          Generated by FieldPro
-        </Text>
+        {/* ── Footer ── */}
+        <View style={styles.footer} fixed>
+          <Text style={styles.footerText}>
+            {quote.organization.name}
+            {license ? `  •  Lic. ${license}` : ""}
+          </Text>
+          <Text style={styles.footerText}>Generado por FieldPro</Text>
+          <Text
+            style={styles.footerText}
+            render={({ pageNumber, totalPages }) =>
+              `Página ${pageNumber} de ${totalPages}`
+            }
+          />
+        </View>
       </Page>
     </Document>
   );
