@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import OpenAI from "openai";
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const RECEIPT_SYSTEM_PROMPT = `Eres un asistente especializado en extracción de datos de recibos de construcción en Puerto Rico.
 Analiza la imagen del recibo y devuelve SOLO un objeto JSON válido con este formato exacto (sin texto adicional):
@@ -41,6 +38,86 @@ Si el subtotal + tax no coincide con el total, establece validation_ok = false.
 La fecha debe estar en formato YYYY-MM-DD. Si no aparece, usa la fecha de hoy.
 Los montos deben ser números decimales, no strings.`;
 
+interface ReceiptData {
+  store_name?: string;
+  store_address?: string;
+  date?: string;
+  receipt_number?: string;
+  payment_method?: string;
+  items?: unknown[];
+  subtotal?: number;
+  tax?: number;
+  total?: number;
+  expense_type?: string;
+  validation_ok?: boolean;
+}
+
+async function extractWithGemini(
+  base64: string,
+  mimeType: string
+): Promise<ReceiptData> {
+  const { GoogleGenAI } = await import("@google/genai");
+  const genai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY ?? "" });
+
+  const response = await genai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: [
+      {
+        role: "user",
+        parts: [
+          { text: RECEIPT_SYSTEM_PROMPT },
+          { inlineData: { mimeType, data: base64 } },
+        ],
+      },
+    ],
+    config: {
+      temperature: 0.1,
+      maxOutputTokens: 2048,
+      responseMimeType: "application/json",
+    },
+  });
+
+  const text = response.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
+  // Strip markdown code blocks if present
+  const clean = text
+    .replace(/^```(?:json)?\n?/m, "")
+    .replace(/\n?```$/m, "")
+    .trim();
+  return JSON.parse(clean) as ReceiptData;
+}
+
+async function extractWithOpenAI(
+  base64: string,
+  mimeType: string
+): Promise<ReceiptData> {
+  const { default: OpenAI } = await import("openai");
+  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o",
+    response_format: { type: "json_object" },
+    max_tokens: 2000,
+    messages: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "image_url",
+            image_url: {
+              url: `data:${mimeType};base64,${base64}`,
+              detail: "high",
+            },
+          },
+          { type: "text", text: RECEIPT_SYSTEM_PROMPT },
+        ],
+      },
+    ],
+  });
+
+  const raw = response.choices[0]?.message?.content ?? "{}";
+  return JSON.parse(raw) as ReceiptData;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { orgId } = await auth();
@@ -55,49 +132,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No image provided" }, { status: 400 });
     }
 
-    // Convert file to base64
     const arrayBuffer = await imageFile.arrayBuffer();
     const base64 = Buffer.from(arrayBuffer).toString("base64");
     const mimeType = imageFile.type || "image/jpeg";
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      response_format: { type: "json_object" },
-      max_tokens: 2000,
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "image_url",
-              image_url: {
-                url: `data:${mimeType};base64,${base64}`,
-                detail: "high",
-              },
-            },
-            {
-              type: "text",
-              text: RECEIPT_SYSTEM_PROMPT,
-            },
-          ],
-        },
-      ],
-    });
-
-    const rawContent = response.choices[0]?.message?.content ?? "{}";
-    const receiptData = JSON.parse(rawContent) as {
-      store_name?: string;
-      store_address?: string;
-      date?: string;
-      receipt_number?: string;
-      payment_method?: string;
-      items?: unknown[];
-      subtotal?: number;
-      tax?: number;
-      total?: number;
-      expense_type?: string;
-      validation_ok?: boolean;
-    };
+    // Try Gemini first; fall back to GPT-4o
+    let receiptData: ReceiptData;
+    try {
+      receiptData = await extractWithGemini(base64, mimeType);
+    } catch (geminiErr) {
+      console.warn(
+        "[receipt] Gemini failed, falling back to GPT-4o:",
+        geminiErr
+      );
+      receiptData = await extractWithOpenAI(base64, mimeType);
+    }
 
     const storeName = receiptData.store_name ?? "Tienda";
     const receiptNumber = receiptData.receipt_number ?? "";

@@ -8,7 +8,9 @@ export const genai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY ?? "",
 });
 
-export const QUOTE_ASSISTANT_MODEL = "gemini-2.0-flash";
+// gemini-2.5-flash has significantly better reasoning than 2.0-flash —
+// more accurate pricing, materials, and structured quote generation.
+export const QUOTE_ASSISTANT_MODEL = "gemini-2.5-flash";
 
 // Function declaration for price lookup
 export const priceLookupDeclaration = {
@@ -100,18 +102,15 @@ export const generateQuoteDeclaration = {
                   },
                   length: {
                     type: Type.NUMBER,
-                    description:
-                      "Length in feet (optional, for area calc)",
+                    description: "Length in feet (optional, for area calc)",
                   },
                   width: {
                     type: Type.NUMBER,
-                    description:
-                      "Width in feet (optional, for area calc)",
+                    description: "Width in feet (optional, for area calc)",
                   },
                   height: {
                     type: Type.NUMBER,
-                    description:
-                      "Height in feet (optional, for volume calc)",
+                    description: "Height in feet (optional, for volume calc)",
                   },
                 },
                 required: [
@@ -129,8 +128,7 @@ export const generateQuoteDeclaration = {
       },
       notes: {
         type: Type.STRING,
-        description:
-          "Additional notes, terms, or conditions for the quote",
+        description: "Additional notes, terms, or conditions for the quote",
       },
     },
     required: ["title", "sections"],
