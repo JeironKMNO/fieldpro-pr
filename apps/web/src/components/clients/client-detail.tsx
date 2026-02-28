@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { trpc } from "@/lib/trpc/client";
@@ -12,14 +13,23 @@ import {
 } from "@fieldpro/ui/components/card";
 import { Badge } from "@fieldpro/ui/components/badge";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@fieldpro/ui/components/dialog";
+import {
   ArrowLeft,
   Edit,
   Archive,
+  Trash2,
   Mail,
   Phone,
   MapPin,
   Navigation,
   ExternalLink,
+  AlertTriangle,
 } from "lucide-react";
 import { ClientNotes } from "./client-notes";
 import { ClientTags } from "./client-tags";
@@ -71,8 +81,16 @@ interface ClientData {
 export function ClientDetail({ client }: { client: ClientData }) {
   const router = useRouter();
   const primaryAddress = client.addresses.find((a) => a.isPrimary);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const archiveClient = trpc.clients.archive.useMutation({
+    onSuccess: () => {
+      router.push("/clients");
+      router.refresh();
+    },
+  });
+
+  const deleteClient = trpc.clients.delete.useMutation({
     onSuccess: () => {
       router.push("/clients");
       router.refresh();
@@ -125,6 +143,15 @@ export function ClientDetail({ client }: { client: ClientData }) {
               {archiveClient.isPending ? "Archivando..." : "Archivar"}
             </Button>
           )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowDeleteDialog(true)}
+            className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Eliminar
+          </Button>
         </div>
       </div>
 
@@ -221,6 +248,53 @@ export function ClientDetail({ client }: { client: ClientData }) {
           <ClientNotes clientId={client.id} initialNotes={client.notes} />
         </div>
       </div>
+
+      {/* Delete confirmation dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <AlertTriangle className="h-5 w-5" />
+              Eliminar cliente permanentemente
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2 text-sm text-muted-foreground">
+            <p>
+              Estás a punto de eliminar a{" "}
+              <span className="font-semibold text-foreground">
+                {client.name}
+              </span>{" "}
+              de forma permanente. Esta acción no se puede deshacer.
+            </p>
+            <p>Se eliminarán también todos los datos asociados:</p>
+            <ul className="ml-4 list-disc space-y-1">
+              <li>Trabajos (jobs) y sus gastos, tareas y fotos</li>
+              <li>Facturas e historial de facturación</li>
+              <li>Cotizaciones y propuestas</li>
+              <li>Notas y etiquetas</li>
+            </ul>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteDialog(false)}
+              disabled={deleteClient.isPending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => deleteClient.mutate({ id: client.id })}
+              disabled={deleteClient.isPending}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              {deleteClient.isPending
+                ? "Eliminando..."
+                : "Sí, eliminar cliente"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

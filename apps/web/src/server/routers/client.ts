@@ -42,7 +42,8 @@ export const clientRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
-      const { page, limit, search, type, status, tagId, sortBy, sortOrder } = input;
+      const { page, limit, search, type, status, tagId, sortBy, sortOrder } =
+        input;
       const skip = (page - 1) * limit;
 
       const where = {
@@ -190,5 +191,37 @@ export const clientRouter = router({
         where: { id: input.id },
         data: { status: "ARCHIVED" },
       });
+    }),
+
+  delete: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const existing = await ctx.db.client.findFirst({
+        where: { id: input.id, organizationId: ctx.auth.organizationId },
+      });
+
+      if (!existing) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Client not found",
+        });
+      }
+
+      // Delete in dependency order since Job and Invoice don't cascade from Client
+      await ctx.db.$transaction([
+        // Invoices reference clientId (required) — delete first; InvoiceItems/Activities cascade
+        ctx.db.invoice.deleteMany({
+          where: { clientId: input.id },
+        }),
+        // Jobs reference clientId (required) — delete next; JobPhotos, JobTasks,
+        // ChangeOrders, Expenses, MaterialList→MaterialItems all cascade from jobId
+        ctx.db.job.deleteMany({
+          where: { clientId: input.id },
+        }),
+        // Client delete cascades: Addresses, Notes, ClientTags, Quotes→sub-records
+        ctx.db.client.delete({
+          where: { id: input.id },
+        }),
+      ]);
     }),
 });
