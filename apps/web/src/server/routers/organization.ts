@@ -202,19 +202,30 @@ export const organizationRouter = router({
 
       // BATCH 5: Monthly financials & profit metrics
       const [
-        paidInvoicesRaw,
+        completedJobsMonthly,
+        activeInvoicesRaw,
         expensesRaw,
         completedJobsAgg,
         totalPaidInvoicesAgg,
         totalExpensesAgg,
       ] = await Promise.all([
+        // Completed jobs for "Cobrado" monthly chart (grouped by completedAt)
+        ctx.db.job.findMany({
+          where: {
+            organizationId: orgId,
+            status: "COMPLETED",
+            completedAt: { gte: sixMonthsAgo },
+          },
+          select: { value: true, completedAt: true },
+        }),
+        // Active invoices for "Facturado" monthly chart (grouped by createdAt)
         ctx.db.invoice.findMany({
           where: {
             organizationId: orgId,
             status: { notIn: ["CANCELLED", "DRAFT"] },
             createdAt: { gte: sixMonthsAgo },
           },
-          select: { total: true, createdAt: true, paidAt: true, status: true },
+          select: { total: true, createdAt: true },
         }),
         ctx.db.expense.findMany({
           where: {
@@ -260,22 +271,28 @@ export const organizationRouter = router({
         last6Months.push(key);
       }
 
-      // Split into paid (by paidAt) vs pending/billed (by createdAt)
-      const paidByMonth = new Map<string, number>();
-      const pendingByMonth = new Map<string, number>();
-      for (const inv of paidInvoicesRaw) {
-        if (inv.status === "PAID" && inv.paidAt) {
-          const d = new Date(inv.paidAt);
+      // Cobrado = completed jobs grouped by completedAt month
+      const cobradoByMonth = new Map<string, number>();
+      for (const job of completedJobsMonthly) {
+        if (job.completedAt) {
+          const d = new Date(job.completedAt);
           const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-          paidByMonth.set(key, (paidByMonth.get(key) ?? 0) + Number(inv.total));
-        } else {
-          const d = new Date(inv.createdAt);
-          const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-          pendingByMonth.set(
+          cobradoByMonth.set(
             key,
-            (pendingByMonth.get(key) ?? 0) + Number(inv.total)
+            (cobradoByMonth.get(key) ?? 0) + Number(job.value)
           );
         }
+      }
+
+      // Facturado = active invoices grouped by createdAt month
+      const facturadoByMonth = new Map<string, number>();
+      for (const inv of activeInvoicesRaw) {
+        const d = new Date(inv.createdAt);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+        facturadoByMonth.set(
+          key,
+          (facturadoByMonth.get(key) ?? 0) + Number(inv.total)
+        );
       }
 
       const expenseByMonth = new Map<string, number>();
@@ -291,10 +308,9 @@ export const organizationRouter = router({
       const monthlyFinancials = last6Months.map((month) => ({
         month,
         label: MONTH_LABELS_ES[month.split("-")[1]!] ?? month,
-        invoiceRevenue:
-          (paidByMonth.get(month) ?? 0) + (pendingByMonth.get(month) ?? 0),
-        invoicePaid: paidByMonth.get(month) ?? 0,
-        invoicePending: pendingByMonth.get(month) ?? 0,
+        invoiceRevenue: facturadoByMonth.get(month) ?? 0, // Facturado (billed)
+        invoicePaid: cobradoByMonth.get(month) ?? 0, // Cobrado (completed jobs)
+        invoicePending: facturadoByMonth.get(month) ?? 0,
         expenses: expenseByMonth.get(month) ?? 0,
       }));
 

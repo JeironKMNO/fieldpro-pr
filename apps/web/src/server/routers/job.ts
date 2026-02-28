@@ -282,10 +282,24 @@ export const jobRouter = router({
         data.completedAt = new Date();
       }
 
-      return ctx.db.job.update({
+      const updatedJob = await ctx.db.job.update({
         where: { id: input.id },
         data,
       });
+
+      // When a job is completed, auto-mark any linked billed invoice as PAID
+      // so it reflects immediately in dashboard "Cobrado" metrics
+      if (input.status === "COMPLETED") {
+        await ctx.db.invoice.updateMany({
+          where: {
+            jobId: input.id,
+            status: { in: ["SENT", "VIEWED", "OVERDUE"] },
+          },
+          data: { status: "PAID", paidAt: new Date() },
+        });
+      }
+
+      return updatedJob;
     }),
 
   setBudget: protectedProcedure
