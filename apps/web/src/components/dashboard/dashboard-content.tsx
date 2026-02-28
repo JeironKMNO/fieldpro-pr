@@ -133,9 +133,9 @@ export function DashboardContent() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <KpiCard
           title="Cobrado"
-          value={fmt(data.invoiceRevenue.paid)}
+          value={fmt(data.profitMetrics.completedJobValue)}
           icon={DollarSign}
-          description={`${data.invoiceCounts.PAID} facturas pagadas`}
+          description={`${data.jobCounts.COMPLETED} trabajos completados`}
           variant="primary"
         />
         <KpiCard
