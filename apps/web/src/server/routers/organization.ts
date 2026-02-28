@@ -308,8 +308,10 @@ export const organizationRouter = router({
       const monthlyFinancials = last6Months.map((month) => ({
         month,
         label: MONTH_LABELS_ES[month.split("-")[1]!] ?? month,
-        invoiceRevenue: facturadoByMonth.get(month) ?? 0, // Facturado (billed)
-        invoicePaid: cobradoByMonth.get(month) ?? 0, // Cobrado (completed jobs)
+        // Facturado = invoice totals for that month (billed to client)
+        invoiceRevenue: facturadoByMonth.get(month) ?? 0,
+        // Cobrado = completed job values for that month (money earned)
+        invoicePaid: cobradoByMonth.get(month) ?? 0,
         invoicePending: facturadoByMonth.get(month) ?? 0,
         expenses: expenseByMonth.get(month) ?? 0,
       }));

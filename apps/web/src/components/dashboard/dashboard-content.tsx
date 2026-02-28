@@ -129,178 +129,124 @@ export function DashboardContent() {
 
   return (
     <div className="space-y-6">
-      {/* Row 1: KPI Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {/* Row 1: Vital Financial KPIs */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {/* Net Profit (Ganancia Neta) */}
+        <KpiCard
+          title="Ganancia Neta"
+          value={fmt(data.profitMetrics.netProfit)}
+          icon={TrendingUp}
+          description={`Margen: ${data.profitMetrics.profitMargin.toFixed(1)}%`}
+          variant="primary"
+        />
+        {/* Paid (Cobrado) */}
         <KpiCard
           title="Cobrado"
           value={fmt(data.profitMetrics.completedJobValue)}
           icon={DollarSign}
           description={`${data.jobCounts.COMPLETED} trabajos completados`}
-          variant="primary"
+          variant="default"
         />
+        {/* Outstanding (Por Cobrar) */}
         <KpiCard
           title="Por Cobrar"
           value={fmt(data.invoiceRevenue.outstanding)}
           icon={Receipt}
-          description={`${data.invoiceCounts.outstanding} facturas por cobrar`}
+          description={`${data.invoiceCounts.outstanding} facturas pendientes`}
+          variant="default"
         />
+        {/* Expenses (Gastos) */}
         <KpiCard
-          title="Pipeline"
-          value={fmt(data.revenue.pending)}
+          title="Gastos Totales"
+          value={fmt(data.profitMetrics.totalExpenses)}
           icon={Clock}
-          description={`${data.quoteCounts.SENT + data.quoteCounts.VIEWED} cotizaciones pendientes`}
+          description="Total acumulado"
+          variant="default"
         />
       </div>
 
-      {/* Row 2: Activity KPIs */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <KpiCard
-          title="Cotizaciones"
-          value={String(data.quoteCounts.total)}
-          icon={FileText}
-          description={`${data.quoteCounts.DRAFT} borradores, ${data.quoteCounts.SENT + data.quoteCounts.VIEWED} pendientes`}
-        />
-        <KpiCard
-          title="Trabajos Activos"
-          value={String(data.jobCounts.active)}
-          icon={Briefcase}
-          description={`${data.jobCounts.SCHEDULED} programados, ${data.jobCounts.IN_PROGRESS} en progreso`}
-        />
-        <KpiCard
-          title="Facturas"
-          value={String(
-            data.invoiceCounts.DRAFT +
-              data.invoiceCounts.SENT +
-              data.invoiceCounts.VIEWED
-          )}
-          icon={Receipt}
-          description={`${data.invoiceCounts.DRAFT} borradores, ${data.invoiceCounts.OVERDUE} vencidas`}
-        />
-        <KpiCard
-          title="Clientes"
-          value={String(data.clientCounts.total)}
-          icon={Users}
-          description={`${data.clientCounts.active} activos`}
-        />
-      </div>
-
-      {/* Needs Attention */}
+      {/* Row 2: Needs Attention (Immediate Action) */}
       {data.needsAttention.length > 0 && (
-        <NeedsAttention items={data.needsAttention} />
+        <div className="pt-2">
+          <NeedsAttention items={data.needsAttention} />
+        </div>
       )}
 
-      {/* Row 2: Pipeline + Revenue Chart */}
-      <div className="grid gap-4 md:grid-cols-2">
+      {/* Row 3: Pipeline + Revenue Chart */}
+      <div className="grid gap-4 md:grid-cols-2 pt-2">
+        <RevenueChart data={data.monthlyFinancials} />
         <QuotePipeline
           counts={data.quoteCounts}
           total={data.quoteCounts.total}
         />
-        <RevenueChart data={data.monthlyFinancials} />
       </div>
 
-      {/* Row 2b: Profit Margin */}
-      <ProfitMarginCard profitMetrics={data.profitMetrics} />
-
-      {/* Row 3: Recent Quotes + Recent Clients */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <RecentQuotesTable quotes={data.recentQuotes} />
-        <RecentClients clients={data.recentClients} />
-      </div>
-
-      {/* Row 4: Quick Stats */}
-      <div className="grid gap-4 md:grid-cols-3">
-        {/* Conversion Rate */}
+      {/* Row 5: Operational Metrics & Quick Stats */}
+      <div className="grid gap-4 md:grid-cols-3 pt-4">
+        {/* Active Jobs */}
         <Card className="card-fieldpro">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm font-medium text-stone-500">
-              <TrendingUp className="h-4 w-4" />
-              Tasa de Conversión
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-4">
-              <div className="text-3xl font-bold text-stone-900 tabular-nums">
-                {data.conversionRate}%
-              </div>
-              <div className="flex-1">
-                <div className="h-2 w-full rounded-full bg-stone-200">
-                  <div
-                    className="h-full rounded-full bg-orange-500 transition-all"
-                    style={{
-                      width: `${data.conversionRate}%`,
-                    }}
-                  />
-                </div>
-                <p className="mt-1 text-xs text-stone-500">
-                  {data.quoteCounts.ACCEPTED} aceptadas de{" "}
-                  {data.quoteCounts.ACCEPTED + data.quoteCounts.REJECTED}{" "}
-                  decididas
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Client Breakdown */}
-        <Card className="card-fieldpro">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-medium text-stone-500">
-              <Building2 className="h-4 w-4" />
-              Tipos de Cliente
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-stone-400">Residencial</span>
-                <span className="text-lg font-bold text-stone-900 tabular-nums">
-                  {data.clientCounts.residential}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-stone-400">Comercial</span>
-                <span className="text-lg font-bold text-stone-900 tabular-nums">
-                  {data.clientCounts.commercial}
-                </span>
-              </div>
-              {data.clientCounts.total > 0 ? (
-                <div className="flex h-2 overflow-hidden rounded-full bg-stone-200 mt-1">
-                  <div
-                    className="rounded-l-full bg-blue-600"
-                    style={{
-                      width: `${(data.clientCounts.residential / data.clientCounts.total) * 100}%`,
-                    }}
-                  />
-                  <div
-                    className="rounded-r-full bg-orange-500"
-                    style={{
-                      width: `${(data.clientCounts.commercial / data.clientCounts.total) * 100}%`,
-                    }}
-                  />
-                </div>
-              ) : null}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Draft Pipeline Value */}
-        <Card className="card-fieldpro">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-medium text-stone-500">
-              <PenLine className="h-4 w-4" />
-              Borradores en Pipeline
+              <Briefcase className="h-4 w-4" />
+              Trabajos Activos
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-stone-900 tabular-nums">
-              {fmt(data.revenue.draft)}
+              {data.jobCounts.active}
             </div>
             <p className="mt-1.5 text-xs text-stone-500">
-              {data.quoteCounts.DRAFT} cotizaciones en borrador
+              {data.jobCounts.SCHEDULED} programados,{" "}
+              {data.jobCounts.IN_PROGRESS} en progreso
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Total Quotes vs Pending */}
+        <Card className="card-fieldpro">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm font-medium text-stone-500">
+              <FileText className="h-4 w-4" />
+              Cotizaciones
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-stone-900 tabular-nums">
+              {data.quoteCounts.total}
+            </div>
+            <p className="mt-1.5 text-xs text-stone-500">
+              {data.quoteCounts.SENT + data.quoteCounts.VIEWED} pendientes de
+              aprobación
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Total Clients */}
+        <Card className="card-fieldpro">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm font-medium text-stone-500">
+              <Users className="h-4 w-4" />
+              Clientes
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-stone-900 tabular-nums">
+              {data.clientCounts.total}
+            </div>
+            <p className="mt-1.5 text-xs text-stone-500">
+              {data.clientCounts.active} clientes activos actualmente
             </p>
           </CardContent>
         </Card>
       </div>
+
+      {/* Row 4: Recent Quotes + Recent Clients */}
+      <div className="grid gap-4 md:grid-cols-2 pt-2">
+        <RecentQuotesTable quotes={data.recentQuotes} />
+        <RecentClients clients={data.recentClients} />
+      </div>
+
+      {/* Removed excess cards as they were cluttering the UI */}
     </div>
   );
 }

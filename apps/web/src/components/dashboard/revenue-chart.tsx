@@ -52,11 +52,10 @@ function CustomTooltip({
           />
           <span className="text-slate-500">
             {p.name === "invoiceRevenue"
-              ? "Facturado"
+              ? "Facturado:"
               : p.name === "invoicePaid"
-                ? "Cobrado"
-                : "Gastos"}
-            :
+                ? "Cobrado:"
+                : "Gastos:"}
           </span>
           <span className="font-medium text-slate-800">
             {new Intl.NumberFormat("en-US", {
@@ -137,7 +136,7 @@ export function RevenueChart({ data }: { data: MonthData[] }) {
               />
               <Area
                 type="monotone"
-                dataKey="invoiceRevenue"
+                dataKey="invoicePaid"
                 stroke="#10b981"
                 strokeWidth={2}
                 fill="url(#gradRevenue)"
@@ -146,7 +145,7 @@ export function RevenueChart({ data }: { data: MonthData[] }) {
               />
               <Area
                 type="monotone"
-                dataKey="invoicePaid"
+                dataKey="invoiceRevenue"
                 stroke="#059669"
                 strokeWidth={1.5}
                 strokeDasharray="4 2"
