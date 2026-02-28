@@ -53,7 +53,9 @@ export const invoiceRouter = router({
         ...(clientId && { clientId }),
         ...(search && {
           OR: [
-            { invoiceNumber: { contains: search, mode: "insensitive" as const } },
+            {
+              invoiceNumber: { contains: search, mode: "insensitive" as const },
+            },
             {
               client: {
                 name: { contains: search, mode: "insensitive" as const },
@@ -129,7 +131,10 @@ export const invoiceRouter = router({
       });
 
       if (!invoice) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Invoice not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Invoice not found",
+        });
       }
 
       return invoice;
@@ -145,7 +150,7 @@ export const invoiceRouter = router({
           organizationId: ctx.auth.organizationId,
         },
         include: {
-          invoice: { select: { id: true } },
+          invoice: { select: { id: true, status: true } },
           quote: {
             include: {
               sections: {
@@ -160,10 +165,10 @@ export const invoiceRouter = router({
         throw new TRPCError({ code: "NOT_FOUND", message: "Job not found" });
       }
 
-      if (job.invoice) {
+      if (job.invoice && job.invoice.status !== "CANCELLED") {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "This job already has an invoice",
+          message: "This job already has an active invoice",
         });
       }
 
@@ -268,7 +273,10 @@ export const invoiceRouter = router({
       });
 
       if (!invoice) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Invoice not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Invoice not found",
+        });
       }
 
       if (invoice.status !== "DRAFT") {
@@ -299,7 +307,10 @@ export const invoiceRouter = router({
       });
 
       if (!invoice) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Invoice not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Invoice not found",
+        });
       }
 
       if (invoice.status !== "DRAFT") {
@@ -417,7 +428,10 @@ export const invoiceRouter = router({
       });
 
       if (!invoice) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Invoice not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Invoice not found",
+        });
       }
 
       const data: Prisma.InvoiceUpdateInput = { status: input.status };
@@ -450,7 +464,10 @@ export const invoiceRouter = router({
       });
 
       if (!invoice) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Invoice not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Invoice not found",
+        });
       }
 
       if (invoice.status === "PAID") {
@@ -489,7 +506,7 @@ export const invoiceRouter = router({
           invoice.invoiceNumber,
           invoice.organization.name,
           total
-        ).catch(() => { });
+        ).catch(() => {});
       }
 
       return { success: true };
@@ -512,7 +529,10 @@ export const invoiceRouter = router({
       });
 
       if (!invoice) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Invoice not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Invoice not found",
+        });
       }
 
       if (!invoice.client.email) {
@@ -522,7 +542,8 @@ export const invoiceRouter = router({
         });
       }
 
-      const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+      const APP_URL =
+        process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
       const shareUrl = `${APP_URL}/invoices/share/${invoice.shareToken}`;
 
       const total = new Intl.NumberFormat("en-US", {
@@ -532,10 +553,10 @@ export const invoiceRouter = router({
 
       const dueDate = invoice.dueDate
         ? new Date(invoice.dueDate).toLocaleDateString("es-PR", {
-          month: "long",
-          day: "numeric",
-          year: "numeric",
-        })
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+          })
         : "No definida";
 
       // Send email
@@ -589,7 +610,10 @@ export const invoiceRouter = router({
       });
 
       if (!invoice) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Invoice not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Invoice not found",
+        });
       }
 
       // Track view
@@ -607,4 +631,3 @@ export const invoiceRouter = router({
       return invoice;
     }),
 });
-

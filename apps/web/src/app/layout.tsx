@@ -1,8 +1,14 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Space_Grotesk } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { TRPCProvider } from "@/lib/trpc/provider";
 import "./globals.css";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -32,8 +38,16 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="es" className={`${playfair.variable} ${spaceGrotesk.variable}`}>
-        <body style={{ fontFamily: "var(--font-body, 'Space Grotesk', system-ui, sans-serif)" }}>
+      <html
+        lang="es"
+        className={`${playfair.variable} ${spaceGrotesk.variable}`}
+      >
+        <body
+          style={{
+            fontFamily:
+              "var(--font-body, 'Space Grotesk', system-ui, sans-serif)",
+          }}
+        >
           <TRPCProvider>{children}</TRPCProvider>
         </body>
       </html>

@@ -46,7 +46,9 @@ export function PageTransition({ children }: PageTransitionProps) {
         transition: "opacity 0.12s ease-out",
         // NOTE: do NOT add willChange here — it creates a stacking context
         // that traps position:fixed children and breaks z-index layering
-        height: "100%",
+        // minHeight (not height) so the div grows with content, allowing
+        // main's padding-bottom to create proper scroll space for the mobile nav
+        minHeight: "100%",
       }}
     >
       {displayChildren}

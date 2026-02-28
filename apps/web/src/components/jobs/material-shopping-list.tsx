@@ -32,7 +32,10 @@ interface MaterialShoppingListProps {
   hasQuote: boolean;
 }
 
-export function MaterialShoppingList({ jobId, hasQuote }: MaterialShoppingListProps) {
+export function MaterialShoppingList({
+  jobId,
+  hasQuote,
+}: MaterialShoppingListProps) {
   const [addingItem, setAddingItem] = useState(false);
   const [newName, setNewName] = useState("");
   const [newQuantity, setNewQuantity] = useState("");
@@ -91,10 +94,6 @@ export function MaterialShoppingList({ jobId, hasQuote }: MaterialShoppingListPr
 
   const items = list?.items ?? [];
   const purchasedCount = items.filter((i) => i.purchased).length;
-  const totalEstimated = items.reduce(
-    (sum, i) => sum + (i.estimatedPrice ? Number(i.estimatedPrice) * Number(i.quantity) : 0),
-    0
-  );
 
   return (
     <Card>
@@ -115,7 +114,8 @@ export function MaterialShoppingList({ jobId, hasQuote }: MaterialShoppingListPr
           <div className="space-y-3 text-center py-4">
             <Sparkles className="mx-auto h-10 w-10 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">
-              Genera una lista de compras a partir de los artículos de la cotización usando IA.
+              Genera una lista de compras a partir de los artículos de la
+              cotización usando IA.
             </p>
             <Button
               onClick={() => generate.mutate({ jobId })}
@@ -135,7 +135,9 @@ export function MaterialShoppingList({ jobId, hasQuote }: MaterialShoppingListPr
               )}
             </Button>
             {generate.isError && (
-              <p className="text-sm text-destructive">{generate.error.message}</p>
+              <p className="text-sm text-destructive">
+                {generate.error.message}
+              </p>
             )}
           </div>
         )}
@@ -153,17 +155,23 @@ export function MaterialShoppingList({ jobId, hasQuote }: MaterialShoppingListPr
                 {items.map((item) => (
                   <li
                     key={item.id}
-                    className={`flex items-start gap-3 rounded-lg border p-3 transition-colors ${item.purchased ? "bg-muted/50 border-muted" : "bg-background"
-                      }`}
+                    className={`flex items-start gap-3 rounded-lg border p-3 transition-colors ${
+                      item.purchased
+                        ? "bg-muted/50 border-muted"
+                        : "bg-background"
+                    }`}
                   >
                     {/* Checkbox */}
                     <button
-                      onClick={() => togglePurchased.mutate({ itemId: item.id })}
+                      onClick={() =>
+                        togglePurchased.mutate({ itemId: item.id })
+                      }
                       disabled={togglePurchased.isPending}
-                      className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors ${item.purchased
+                      className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors ${
+                        item.purchased
                           ? "border-green-600 bg-green-600 text-white"
                           : "border-muted-foreground/30 hover:border-primary"
-                        }`}
+                      }`}
                     >
                       {item.purchased && <Check className="h-3 w-3" />}
                     </button>
@@ -171,8 +179,11 @@ export function MaterialShoppingList({ jobId, hasQuote }: MaterialShoppingListPr
                     {/* Item info */}
                     <div className="flex-1 min-w-0">
                       <p
-                        className={`text-sm font-medium ${item.purchased ? "line-through text-muted-foreground" : ""
-                          }`}
+                        className={`text-sm font-medium ${
+                          item.purchased
+                            ? "line-through text-muted-foreground"
+                            : ""
+                        }`}
                       >
                         {item.name}
                       </p>
@@ -238,7 +249,8 @@ export function MaterialShoppingList({ jobId, hasQuote }: MaterialShoppingListPr
                   <Button
                     size="sm"
                     onClick={() => {
-                      if (!newName.trim() || !newQuantity || !newUnit.trim()) return;
+                      if (!newName.trim() || !newQuantity || !newUnit.trim())
+                        return;
                       addItem.mutate({
                         materialListId: list.id,
                         name: newName.trim(),
@@ -246,7 +258,12 @@ export function MaterialShoppingList({ jobId, hasQuote }: MaterialShoppingListPr
                         unit: newUnit.trim(),
                       });
                     }}
-                    disabled={addItem.isPending || !newName.trim() || !newQuantity || !newUnit.trim()}
+                    disabled={
+                      addItem.isPending ||
+                      !newName.trim() ||
+                      !newQuantity ||
+                      !newUnit.trim()
+                    }
                   >
                     {addItem.isPending ? (
                       <Loader2 className="mr-1 h-3 w-3 animate-spin" />
@@ -318,7 +335,9 @@ export function MaterialShoppingList({ jobId, hasQuote }: MaterialShoppingListPr
             )}
 
             {generate.isError && (
-              <p className="text-sm text-destructive">{generate.error.message}</p>
+              <p className="text-sm text-destructive">
+                {generate.error.message}
+              </p>
             )}
           </div>
         )}

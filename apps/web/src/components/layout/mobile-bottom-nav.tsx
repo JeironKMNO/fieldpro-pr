@@ -23,7 +23,13 @@ export function MobileBottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-around border-t border-stone-200 bg-white/95 backdrop-blur-sm">
+    <nav
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-stone-200 bg-white/95 backdrop-blur-sm"
+      style={{
+        paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        minHeight: "64px",
+      }}
+    >
       {navigation.map((item) => {
         const isActive = pathname.startsWith(item.href);
         const Icon = item.icon;

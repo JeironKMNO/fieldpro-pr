@@ -228,6 +228,23 @@ html {
   scroll-padding-top: 80px;
 }
 
+/* Mobile nav clearance — content never hidden under fixed bottom nav + iPhone safe area */
+.mobile-nav-clearance {
+  padding-bottom: calc(8rem + env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 768px) {
+  .mobile-nav-clearance {
+    padding-bottom: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .mobile-nav-clearance {
+    padding-bottom: 2rem;
+  }
+}
+
 /* Hero wave animation */
 @keyframes wave {
   0%, 100% { transform: translateX(0); }

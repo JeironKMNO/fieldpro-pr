@@ -47,12 +47,10 @@ function formatCurrency(value: unknown): string {
 
 export function QuoteSectionCard({
   section,
-  quoteId,
   isDraft,
   onUpdate,
 }: {
   section: SectionData;
-  quoteId: string;
   isDraft: boolean;
   onUpdate: () => void;
 }) {
@@ -88,9 +86,7 @@ export function QuoteSectionCard({
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-destructive hover:text-destructive"
-                onClick={() =>
-                  removeSection.mutate({ sectionId: section.id })
-                }
+                onClick={() => removeSection.mutate({ sectionId: section.id })}
                 disabled={removeSection.isPending}
               >
                 <Trash2 className="h-4 w-4" />

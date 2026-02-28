@@ -96,23 +96,8 @@ function getProDescription(
   qty: number,
   unitType: string
 ): string {
-  if (desc.length > 40) return desc;
-
-  const unitLabel =
-    unitType === "SQ_FT"
-      ? "pies cuadrados"
-      : unitType === "LINEAR_FT"
-        ? "pies lineales"
-        : unitType === "CUBIC_YD"
-          ? "yardas cúbicas"
-          : unitType === "HOUR"
-            ? "horas"
-            : unitType === "LUMP_SUM"
-              ? ""
-              : "unidades";
-
-  if (unitType === "LUMP_SUM") return desc;
-  if (qty > 1 && unitLabel) return `${desc} (${qty} ${unitLabel})`;
+  void qty;
+  void unitType;
   return desc;
 }
 

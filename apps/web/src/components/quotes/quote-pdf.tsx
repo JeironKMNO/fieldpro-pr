@@ -9,11 +9,10 @@ import {
   StyleSheet,
 } from "@react-pdf/renderer";
 
-// ─── Design system ───────────────────────────────────────────────
-// Primary dark: #0f172a   Accent emerald: #10b981
-// Table header: #1e293b   Alt row: #f8fafc
-// Total highlight: #ecfdf5  Total value: #10b981
-// Labels: #64748b         Body: #0f172a
+// ─── Design system ────────────────────────────────────────────────
+// Clean professional palette — no loud colors
+// Headings:  #111827   Body: #374151   Meta: #6b7280   Muted: #9ca3af
+// Borders:   #e5e7eb   Table header bg: #f3f4f6   Alt row: #f9fafb
 // ─────────────────────────────────────────────────────────────────
 
 const PAGE_PADDING = 40;
@@ -21,79 +20,81 @@ const PAGE_PADDING = 40;
 const styles = StyleSheet.create({
   page: {
     paddingHorizontal: PAGE_PADDING,
-    paddingTop: 0,
-    paddingBottom: 40,
+    paddingTop: 28,
+    paddingBottom: 48,
     fontSize: 10,
     fontFamily: "Helvetica",
-    color: "#0f172a",
+    color: "#374151",
   },
-  // ── Header band ──
-  headerBand: {
+  // ── Header (Premium) ──
+  headerBackground: {
     backgroundColor: "#0f172a",
     marginHorizontal: -PAGE_PADDING,
+    marginTop: -28,
+    paddingTop: 36,
+    paddingBottom: 24,
     paddingHorizontal: PAGE_PADDING,
-    paddingVertical: 22,
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "flex-start",
+  },
+  accentStripe: {
+    backgroundColor: "#10b981",
+    height: 4,
+    marginHorizontal: -PAGE_PADDING,
+    marginBottom: 24,
   },
   headerLeft: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     gap: 12,
   },
   logo: {
     width: 44,
     height: 44,
     objectFit: "contain",
-    backgroundColor: "#ffffff",
-    borderRadius: 4,
   },
   companyName: {
-    fontSize: 19,
+    fontSize: 20,
     fontFamily: "Helvetica-Bold",
     color: "#ffffff",
   },
   companyDetail: {
-    fontSize: 8,
+    fontSize: 9,
+    fontFamily: "Helvetica",
     color: "#94a3b8",
-    marginTop: 3,
+    marginTop: 4,
   },
   headerRight: {
     alignItems: "flex-end",
   },
   cotizacionLabel: {
-    fontSize: 9,
+    fontSize: 8,
     fontFamily: "Helvetica-Bold",
-    color: "#10b981",
+    color: "#34d399",
     textTransform: "uppercase",
-    letterSpacing: 1.5,
+    letterSpacing: 2,
     marginBottom: 4,
   },
   quoteNumber: {
-    fontSize: 22,
+    fontSize: 18,
     fontFamily: "Helvetica-Bold",
     color: "#ffffff",
   },
   dateText: {
-    fontSize: 8,
+    fontSize: 9,
     color: "#94a3b8",
-    marginTop: 3,
+    marginTop: 4,
   },
-  // ── Accent stripe ──
-  accentStripe: {
-    height: 3,
-    backgroundColor: "#10b981",
-    marginHorizontal: -PAGE_PADDING,
-    marginBottom: 18,
-  },
-  // ── Client / meta block ──
+  // ── Client Meta Block ──
   clientMetaBlock: {
     flexDirection: "row",
-    paddingBottom: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: "#10b981",
-    marginBottom: 18,
+    backgroundColor: "#f8fafc",
+    padding: 16,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    marginBottom: 24,
   },
   clientCol: {
     flex: 6,
@@ -103,23 +104,23 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   billToLabel: {
-    fontSize: 7,
+    fontSize: 8,
     fontFamily: "Helvetica-Bold",
     color: "#64748b",
     textTransform: "uppercase",
     letterSpacing: 1.2,
-    marginBottom: 5,
+    marginBottom: 6,
   },
   clientName: {
-    fontSize: 12,
+    fontSize: 14,
     fontFamily: "Helvetica-Bold",
     color: "#0f172a",
-    marginBottom: 2,
+    marginBottom: 4,
   },
   clientInfo: {
-    fontSize: 9,
-    color: "#64748b",
-    marginTop: 1,
+    fontSize: 10,
+    color: "#475569",
+    marginTop: 2,
   },
   metaLabel: {
     fontSize: 7,
@@ -127,150 +128,214 @@ const styles = StyleSheet.create({
     color: "#64748b",
     textTransform: "uppercase",
     letterSpacing: 1,
-    marginBottom: 3,
+    marginBottom: 2,
     marginTop: 6,
   },
   metaValue: {
-    fontSize: 9,
+    fontSize: 10,
     color: "#0f172a",
   },
-  // ── Section titles ──
+  // ── Sections ──
+  sectionContainer: {
+    marginBottom: 20,
+    paddingLeft: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: "#10b981",
+  },
+  sectionTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  sectionNumberCircle: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: "#d1fae5",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 6,
+  },
+  sectionNumberText: {
+    fontSize: 7,
+    fontFamily: "Helvetica-Bold",
+    color: "#047857",
+  },
   sectionTitle: {
     fontSize: 10,
     fontFamily: "Helvetica-Bold",
     color: "#0f172a",
     textTransform: "uppercase",
-    letterSpacing: 0.8,
-    marginBottom: 4,
-    marginTop: 18,
-    borderLeftWidth: 3,
-    borderLeftColor: "#10b981",
-    paddingLeft: 8,
+    letterSpacing: 1,
   },
-  sectionDescription: {
-    fontSize: 9,
-    color: "#4b5563",
-    marginBottom: 6,
-    lineHeight: 1.4,
-    paddingLeft: 11,
+  tableContainer: {
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    borderRadius: 6,
+    overflow: "hidden",
   },
-  // ── Table ──
   tableHeaderRow: {
-    flexDirection: "row",
-    backgroundColor: "#1e293b",
-    paddingVertical: 6,
-    paddingHorizontal: 4,
-    marginBottom: 0,
+    backgroundColor: "#f8fafc",
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e2e8f0",
   },
   tableHeaderText: {
     fontSize: 8,
     fontFamily: "Helvetica-Bold",
-    color: "#ffffff",
+    color: "#64748b",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
   tableRowEven: {
     flexDirection: "row",
-    backgroundColor: "#f8fafc",
-    paddingVertical: 5,
-    paddingHorizontal: 4,
+    backgroundColor: "#ffffff",
+    paddingVertical: 8,
+    paddingHorizontal: 10,
   },
   tableRowOdd: {
     flexDirection: "row",
-    backgroundColor: "#ffffff",
-    paddingVertical: 5,
-    paddingHorizontal: 4,
+    backgroundColor: "#f8fafc",
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderTopWidth: 1,
+    borderTopColor: "#f1f5f9",
   },
-  colDescription: { flex: 3 },
-  colQty: { width: 55, textAlign: "right" },
-  colUnit: { width: 50, textAlign: "right" },
-  colPrice: { width: 65, textAlign: "right" },
-  colTotal: { width: 70, textAlign: "right" },
+  bulletPoint: {
+    width: 3,
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: "#34d399",
+    marginTop: 4,
+    marginRight: 6,
+  },
+  itemDescription: {
+    fontSize: 10,
+    color: "#334155",
+    lineHeight: 1.4,
+    flex: 1,
+  },
   dimText: {
     fontSize: 8,
-    color: "#9ca3af",
+    color: "#94a3b8",
+    marginTop: 2,
+    marginLeft: 9,
   },
-  // ── Section subtotal ──
-  sectionSubtotalRow: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    paddingTop: 6,
-    paddingBottom: 2,
-    borderTopWidth: 0.5,
-    borderTopColor: "#e2e8f0",
-  },
-  sectionSubtotalLabel: {
-    fontSize: 9,
-    fontFamily: "Helvetica-Bold",
-    color: "#64748b",
-    marginRight: 8,
-  },
-  sectionSubtotalValue: {
-    fontSize: 9,
-    fontFamily: "Helvetica-Bold",
-    width: 70,
-    textAlign: "right",
-    color: "#0f172a",
-  },
-  // ── Totals ──
+  // ── Totals Box ──
   totalsContainer: {
     marginTop: 24,
     alignItems: "flex-end",
   },
-  totalsRow: {
-    flexDirection: "row",
+  totalsBox: {
     width: 220,
-    marginBottom: 4,
-  },
-  totalsLabel: {
-    flex: 1,
-    textAlign: "right",
-    paddingRight: 12,
-    fontSize: 9,
-    color: "#64748b",
-  },
-  totalsValue: {
-    width: 80,
-    textAlign: "right",
-    fontSize: 9,
-    color: "#0f172a",
-  },
-  totalHighlightRow: {
-    flexDirection: "row",
+    borderWidth: 2,
+    borderColor: "#10b981",
+    borderRadius: 6,
     backgroundColor: "#ecfdf5",
-    borderRadius: 4,
-    width: 220,
-    paddingVertical: 9,
-    paddingHorizontal: 10,
-    marginTop: 4,
   },
-  totalLabel: {
-    flex: 1,
-    textAlign: "right",
-    paddingRight: 12,
-    fontSize: 14,
+  totalsHeader: {
+    backgroundColor: "#10b981",
+    paddingVertical: 6,
+    alignItems: "center",
+  },
+  totalsHeaderText: {
+    fontSize: 8,
     fontFamily: "Helvetica-Bold",
-    color: "#0f172a",
+    color: "#ffffff",
+    textTransform: "uppercase",
+    letterSpacing: 1.5,
+  },
+  totalsBody: {
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    alignItems: "center",
   },
   totalValue: {
-    width: 80,
-    textAlign: "right",
-    fontSize: 16,
+    fontSize: 18,
     fontFamily: "Helvetica-Bold",
-    color: "#10b981",
+    color: "#047857",
   },
-  // ── Notes ──
+  totalSubtext: {
+    fontSize: 7,
+    fontFamily: "Helvetica-Bold",
+    color: "#059669",
+    marginTop: 6,
+    textTransform: "uppercase",
+  },
+  // ── Signatures ──
+  signaturesContainer: {
+    marginTop: 32,
+    borderTopWidth: 1,
+    borderTopColor: "#e2e8f0",
+    paddingTop: 24,
+  },
+  termsBlock: {
+    backgroundColor: "#f8fafc",
+    padding: 12,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    marginBottom: 20,
+  },
   termsLabel: {
     fontSize: 8,
     fontFamily: "Helvetica-Bold",
     color: "#64748b",
     textTransform: "uppercase",
     letterSpacing: 1,
-    marginTop: 24,
     marginBottom: 6,
   },
   termsText: {
     fontSize: 9,
-    color: "#64748b",
+    color: "#475569",
     lineHeight: 1.4,
+  },
+  agreementText: {
+    fontSize: 9,
+    fontFamily: "Helvetica-Bold",
+    color: "#64748b",
+    marginBottom: 16,
+  },
+  signatureBoxes: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 20,
+  },
+  sigBox: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    borderRadius: 6,
+  },
+  sigHeader: {
+    backgroundColor: "#f8fafc",
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#cbd5e1",
+  },
+  sigHeaderText: {
+    fontSize: 7,
+    fontFamily: "Helvetica-Bold",
+    color: "#64748b",
+    textTransform: "uppercase",
+    letterSpacing: 1,
+  },
+  sigBody: {
+    paddingTop: 40,
+    paddingHorizontal: 12,
+    paddingBottom: 12,
+  },
+  sigLine: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#cbd5e1",
+    marginBottom: 6,
+  },
+  sigName: {
+    fontSize: 9,
+    fontFamily: "Helvetica-Bold",
+    color: "#475569",
   },
   // ── Footer ──
   footer: {
@@ -281,60 +346,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     borderTopWidth: 0.5,
-    borderTopColor: "#e2e8f0",
-    paddingTop: 4,
+    borderTopColor: "#e5e7eb",
+    paddingTop: 5,
   },
   footerText: {
     fontSize: 7,
-    color: "#94a3b8",
+    color: "#9ca3af",
   },
 });
-
-const UNIT_LABELS: Record<string, string> = {
-  SQ_FT: "p²",
-  LINEAR_FT: "p lin",
-  CUBIC_YD: "yd³",
-  UNIT: "ud",
-  HOUR: "hr",
-  LUMP_SUM: "global",
-};
-
-const ROMAN_NUMERALS = [
-  "I",
-  "II",
-  "III",
-  "IV",
-  "V",
-  "VI",
-  "VII",
-  "VIII",
-  "IX",
-  "X",
-  "XI",
-  "XII",
-];
-
-const CATEGORY_DESCRIPTIONS: Record<string, string> = {
-  Demolicion:
-    "Trabajos de demolición y preparación del área incluyendo remoción de estructuras existentes, disposición de escombros y limpieza del terreno para iniciar la nueva construcción.",
-  Estructura:
-    "Fase estructural del proyecto incluyendo cimentación, columnas, vigas, losas y todo elemento portante necesario para la integridad de la obra.",
-  Plomeria:
-    "Instalaciones de plomería incluyendo tuberías de agua potable, drenaje, accesorios, llaves de paso y conexiones a la red principal.",
-  Electrico:
-    "Sistema eléctrico completo incluyendo paneles, cableado, tomacorrientes, interruptores, luminarias y conexiones según código eléctrico vigente.",
-  Techado:
-    "Trabajos de techado y protección exterior incluyendo estructura, impermeabilización, aislamiento y acabados de cubierta.",
-  Piso: "Instalación de pisos y superficies incluyendo preparación de base, material de piso seleccionado, mortero, sellador y acabado final.",
-  Pintura:
-    "Trabajos de pintura y acabados de superficie incluyendo preparación, sellador, primer, pintura de acabado y recubrimientos protectores.",
-  Acabados:
-    "Acabados finales y detalles del proyecto incluyendo molduras, zócalos, herrajes y elementos decorativos.",
-  "Ventanas/Puertas":
-    "Instalación de ventanas y puertas incluyendo marcos, herrajes, sellado contra intemperie y ajustes finales.",
-  Otros:
-    "Trabajos adicionales especializados según se describe a continuación.",
-};
 
 function fmt(value: unknown): string {
   return new Intl.NumberFormat("en-US", {
@@ -349,10 +368,6 @@ function fmtDate(date: Date | string): string {
     month: "long",
     year: "numeric",
   });
-}
-
-function toRoman(index: number): string {
-  return ROMAN_NUMERALS[index] ?? String(index + 1);
 }
 
 export interface PdfQuote {
@@ -407,9 +422,10 @@ export function QuotePdfDocument({ quote }: { quote: PdfQuote }) {
   return (
     <Document>
       <Page size="LETTER" style={styles.page}>
-        {/* ── Dark header band ── */}
-        <View style={styles.headerBand}>
+        {/* ── Header ── */}
+        <View style={styles.headerBackground} fixed>
           <View style={styles.headerLeft}>
+            {/* eslint-disable-next-line jsx-a11y/alt-text */}
             {logoUrl ? <Image src={logoUrl} style={styles.logo} /> : null}
             <View>
               <Text style={styles.companyName}>{quote.organization.name}</Text>
@@ -426,8 +442,13 @@ export function QuotePdfDocument({ quote }: { quote: PdfQuote }) {
             </View>
           </View>
           <View style={styles.headerRight}>
-            <Text style={styles.cotizacionLabel}>Cotización</Text>
+            <Text style={styles.cotizacionLabel}>Propuesta de Servicios</Text>
             <Text style={styles.quoteNumber}>{quote.quoteNumber}</Text>
+            {quote.title ? (
+              <Text style={{ fontSize: 10, color: "#cbd5e1", marginTop: 4 }}>
+                {quote.title}
+              </Text>
+            ) : null}
             <Text style={styles.dateText}>{fmtDate(quote.createdAt)}</Text>
             {quote.validUntil ? (
               <Text style={styles.dateText}>
@@ -436,9 +457,7 @@ export function QuotePdfDocument({ quote }: { quote: PdfQuote }) {
             ) : null}
           </View>
         </View>
-
-        {/* ── Emerald accent stripe ── */}
-        <View style={styles.accentStripe} />
+        <View style={styles.accentStripe} fixed />
 
         {/* ── Client info + meta ── */}
         <View style={styles.clientMetaBlock}>
@@ -458,139 +477,117 @@ export function QuotePdfDocument({ quote }: { quote: PdfQuote }) {
               </Text>
             ) : null}
           </View>
-          <View style={styles.metaCol}>
-            {quote.title ? (
-              <>
-                <Text style={styles.metaLabel}>Proyecto</Text>
-                <Text style={styles.metaValue}>{quote.title}</Text>
-              </>
-            ) : null}
-            <Text style={styles.metaLabel}>Fecha</Text>
-            <Text style={styles.metaValue}>{fmtDate(quote.createdAt)}</Text>
-            {quote.validUntil ? (
-              <>
-                <Text style={styles.metaLabel}>Válida hasta</Text>
-                <Text style={styles.metaValue}>
-                  {fmtDate(quote.validUntil)}
-                </Text>
-              </>
-            ) : null}
-          </View>
         </View>
 
         {/* ── Sections ── */}
         {quote.sections.map((section, sectionIndex) => {
           const categoryName = section.category.name;
-          const description = CATEGORY_DESCRIPTIONS[categoryName] ?? null;
 
           return (
-            <View key={section.id} wrap={false}>
-              <Text style={styles.sectionTitle}>
-                {toRoman(sectionIndex)}. {categoryName}
-              </Text>
-
-              {description ? (
-                <Text style={styles.sectionDescription}>{description}</Text>
-              ) : null}
-
-              {/* Table header */}
-              <View style={styles.tableHeaderRow}>
-                <Text style={[styles.tableHeaderText, styles.colDescription]}>
-                  Descripción
-                </Text>
-                <Text style={[styles.tableHeaderText, styles.colQty]}>
-                  Cant.
-                </Text>
-                <Text style={[styles.tableHeaderText, styles.colUnit]}>
-                  Unidad
-                </Text>
-                <Text style={[styles.tableHeaderText, styles.colPrice]}>
-                  Precio
-                </Text>
-                <Text style={[styles.tableHeaderText, styles.colTotal]}>
-                  Total
-                </Text>
-              </View>
-
-              {/* Rows */}
-              {section.items.map((item, rowIndex) => (
-                <View
-                  key={item.id}
-                  style={
-                    rowIndex % 2 === 0
-                      ? styles.tableRowEven
-                      : styles.tableRowOdd
-                  }
-                >
-                  <View style={styles.colDescription}>
-                    <Text>{item.description}</Text>
-                    {Number(item.length) > 0 && Number(item.width) > 0 ? (
-                      <Text style={styles.dimText}>
-                        ({Number(item.length)} x {Number(item.width)} p²)
-                      </Text>
-                    ) : null}
-                  </View>
-                  <Text style={styles.colQty}>
-                    {Number(item.quantity).toFixed(2)}
-                  </Text>
-                  <Text style={styles.colUnit}>
-                    {UNIT_LABELS[item.unitType] ?? item.unitType}
-                  </Text>
-                  <Text style={styles.colPrice}>{fmt(item.unitPrice)}</Text>
-                  <Text
-                    style={[styles.colTotal, { fontFamily: "Helvetica-Bold" }]}
-                  >
-                    {fmt(item.total)}
+            <View key={section.id} style={styles.sectionContainer} wrap={false}>
+              <View style={styles.sectionTitleRow}>
+                <View style={styles.sectionNumberCircle}>
+                  <Text style={styles.sectionNumberText}>
+                    {sectionIndex + 1}
                   </Text>
                 </View>
-              ))}
+                <Text style={styles.sectionTitle}>{categoryName}</Text>
+              </View>
 
-              {/* Section subtotal */}
-              <View style={styles.sectionSubtotalRow}>
-                <Text style={styles.sectionSubtotalLabel}>
-                  Subtotal {toRoman(sectionIndex)}:
-                </Text>
-                <Text style={styles.sectionSubtotalValue}>
-                  {fmt(section.subtotal)}
-                </Text>
+              <View style={styles.tableContainer}>
+                <View style={styles.tableHeaderRow}>
+                  <Text style={styles.tableHeaderText}>
+                    Desglose de Trabajo
+                  </Text>
+                </View>
+
+                {section.items.map((item, rowIndex) => (
+                  <View
+                    key={item.id}
+                    style={
+                      rowIndex % 2 === 0
+                        ? styles.tableRowEven
+                        : styles.tableRowOdd
+                    }
+                  >
+                    <View style={styles.bulletPoint} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.itemDescription}>
+                        {item.description}
+                      </Text>
+                      {Number(item.length) > 0 && Number(item.width) > 0 ? (
+                        <Text style={styles.dimText}>
+                          Dimensiones: {Number(item.length)} x{" "}
+                          {Number(item.width)}
+                        </Text>
+                      ) : null}
+                    </View>
+                  </View>
+                ))}
               </View>
             </View>
           );
         })}
 
         {/* ── Totals ── */}
-        <View style={styles.totalsContainer}>
-          <View style={styles.totalsRow}>
-            <Text style={styles.totalsLabel}>Subtotal</Text>
-            <Text style={styles.totalsValue}>{fmt(quote.subtotal)}</Text>
-          </View>
-          <View style={styles.totalsRow}>
-            <Text style={styles.totalsLabel}>
-              IVU ({(Number(quote.taxRate) * 100).toFixed(1)}%)
-            </Text>
-            <Text style={styles.totalsValue}>{fmt(quote.taxAmount)}</Text>
-          </View>
-          <View style={styles.totalHighlightRow}>
-            <Text style={styles.totalLabel}>Total</Text>
-            <Text style={styles.totalValue}>{fmt(quote.total)}</Text>
+        <View style={styles.totalsContainer} wrap={false}>
+          <View style={styles.totalsBox}>
+            <View style={styles.totalsHeader}>
+              <Text style={styles.totalsHeaderText}>Inversión Total</Text>
+            </View>
+            <View style={styles.totalsBody}>
+              <Text style={styles.totalValue}>{fmt(quote.total)}</Text>
+              <Text style={styles.totalSubtext}>
+                (Materiales, Mano de Obra e Impuestos)
+              </Text>
+            </View>
           </View>
         </View>
 
-        {/* ── Notes ── */}
-        {quote.notes ? (
-          <View>
-            <Text style={styles.termsLabel}>Notas y Condiciones</Text>
-            <Text style={styles.termsText}>{quote.notes}</Text>
+        {/* ── Signatures & Terms ── */}
+        <View style={styles.signaturesContainer} wrap={false}>
+          {quote.notes ? (
+            <View style={styles.termsBlock}>
+              <Text style={styles.termsLabel}>Términos y Condiciones</Text>
+              <Text style={styles.termsText}>{quote.notes}</Text>
+            </View>
+          ) : null}
+
+          <Text style={styles.agreementText}>
+            Al firmar este documento, ambas partes acuerdan los trabajos y la
+            inversión descritos anteriormente.
+          </Text>
+
+          <View style={styles.signatureBoxes}>
+            <View style={styles.sigBox}>
+              <View style={styles.sigHeader}>
+                <Text style={styles.sigHeaderText}>Contratista</Text>
+              </View>
+              <View style={styles.sigBody}>
+                <View style={styles.sigLine} />
+                <Text style={styles.sigName}>{quote.organization.name}</Text>
+              </View>
+            </View>
+
+            <View style={styles.sigBox}>
+              <View style={styles.sigHeader}>
+                <Text style={styles.sigHeaderText}>Cliente</Text>
+              </View>
+              <View style={styles.sigBody}>
+                <View style={styles.sigLine} />
+                <Text style={styles.sigName}>{quote.client.name}</Text>
+              </View>
+            </View>
           </View>
-        ) : null}
+        </View>
 
         {/* ── Footer ── */}
         <View style={styles.footer} fixed>
           <Text style={styles.footerText}>
             {quote.organization.name}
-            {license ? `  •  Lic. ${license}` : ""}
+            {license ? `  ·  Lic. ${license}` : ""}
           </Text>
-          <Text style={styles.footerText}>Generado por FieldPro</Text>
+          <Text style={styles.footerText}>FieldPro</Text>
           <Text
             style={styles.footerText}
             render={({ pageNumber, totalPages }) =>

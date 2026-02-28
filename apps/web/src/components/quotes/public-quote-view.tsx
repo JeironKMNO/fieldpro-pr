@@ -28,7 +28,12 @@ interface PublicQuoteData {
     name: string;
     email: string | null;
     phone: string | null;
-    addresses: { street: string; city: string; state: string; zipCode: string }[];
+    addresses: {
+      street: string;
+      city: string;
+      state: string;
+      zipCode: string;
+    }[];
   };
   sections: {
     id: string;
@@ -71,7 +76,9 @@ export function PublicQuoteView({
   const [responseType, setResponseType] = useState<string | null>(
     canRespond || isExpired ? null : quote.status
   );
-  const [confirming, setConfirming] = useState<"ACCEPTED" | "REJECTED" | null>(null);
+  const [confirming, setConfirming] = useState<"ACCEPTED" | "REJECTED" | null>(
+    null
+  );
   const [error, setError] = useState<string | null>(null);
 
   const handleRespond = async (response: "ACCEPTED" | "REJECTED") => {
@@ -93,15 +100,18 @@ export function PublicQuoteView({
     <div className="space-y-6">
       {/* Expired Banner */}
       {isExpired ? (
-        <div className="mx-auto max-w-3xl rounded-lg border border-amber-200 bg-amber-50 p-4">
+        <div className="mx-auto max-w-3xl rounded-xl border border-amber-200 bg-amber-50 p-5 shadow-sm">
           <div className="flex items-center gap-3">
             <AlertTriangle className="h-5 w-5 text-amber-600" />
             <div>
-              <p className="font-medium text-amber-800">Esta cotización ha expirado</p>
+              <p className="font-medium text-amber-800">
+                Esta cotización ha expirado
+              </p>
               {quote.validUntil ? (
                 <p className="text-sm text-amber-600">
-                  Esta cotización era válida hasta {formatDate(quote.validUntil)}.
-                  Por favor contacte a {quote.organization.name} para una cotización actualizada.
+                  Esta cotización era válida hasta{" "}
+                  {formatDate(quote.validUntil)}. Por favor contacte a{" "}
+                  {quote.organization.name} para una cotización actualizada.
                 </p>
               ) : null}
               {quote.organization.phone ? (
@@ -119,7 +129,7 @@ export function PublicQuoteView({
 
       {/* Response Section */}
       {!isExpired ? (
-        <div className="mx-auto max-w-3xl rounded-lg border bg-white p-6 shadow-sm">
+        <div className="mx-auto max-w-3xl rounded-xl border border-slate-200 bg-white p-8 shadow-xl mt-8">
           {responded ? (
             <div className="text-center">
               {responseType === "ACCEPTED" ? (
@@ -127,9 +137,12 @@ export function PublicQuoteView({
                   <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
                     <Check className="h-6 w-6 text-green-600" />
                   </div>
-                  <p className="font-semibold text-green-700">Cotización Aceptada</p>
+                  <p className="font-semibold text-green-700">
+                    Cotización Aceptada
+                  </p>
                   <p className="text-sm text-muted-foreground">
-                    ¡Gracias! {quote.organization.name} ha sido notificado y se comunicará con usted pronto.
+                    ¡Gracias! {quote.organization.name} ha sido notificado y se
+                    comunicará con usted pronto.
                   </p>
                   {quote.organization.phone ? (
                     <p className="mt-2 flex items-center justify-center gap-1 text-sm text-muted-foreground">
@@ -143,7 +156,9 @@ export function PublicQuoteView({
                   <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
                     <X className="h-6 w-6 text-red-600" />
                   </div>
-                  <p className="font-semibold text-red-700">Cotización Rechazada</p>
+                  <p className="font-semibold text-red-700">
+                    Cotización Rechazada
+                  </p>
                   <p className="text-sm text-muted-foreground">
                     {quote.organization.name} ha sido notificado de su decisión.
                   </p>
@@ -156,9 +171,7 @@ export function PublicQuoteView({
             </div>
           ) : (
             <div className="space-y-4 text-center">
-              {error ? (
-                <p className="text-sm text-red-600">{error}</p>
-              ) : null}
+              {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
               {confirming ? (
                 <>

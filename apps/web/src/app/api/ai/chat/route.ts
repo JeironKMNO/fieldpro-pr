@@ -141,10 +141,10 @@ async function handleGeminiStreaming(
 
   const candidate = response.candidates?.[0];
   if (!candidate?.content?.parts) {
-    send("text-delta", {
-      delta: "No pude generar una respuesta. Por favor intenta de nuevo.",
-    });
-    return;
+    const finishReason = candidate?.finishReason ?? "unknown";
+    throw new Error(
+      `Gemini returned empty response (finishReason: ${finishReason})`
+    );
   }
 
   let hasText = false;

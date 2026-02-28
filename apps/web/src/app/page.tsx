@@ -315,10 +315,11 @@ function HeroSection() {
                 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.1] tracking-tight"
                 style={{ fontFamily: THEME.fonts.display }}
               >
-                Administra tus
+                La mala administración
                 <br />
+                te está haciendo{" "}
                 <span className="relative">
-                  proyectos
+                  perder dinero
                   <svg
                     className="absolute -bottom-2 left-0 w-full"
                     viewBox="0 0 300 12"
@@ -331,13 +332,12 @@ function HeroSection() {
                       strokeLinecap="round"
                     />
                   </svg>
-                </span>{" "}
-                como un profesional
+                </span>
               </h1>
               <p className="text-lg sm:text-xl text-white/80 max-w-xl leading-relaxed">
-                Cotizaciones con IA, seguimiento de trabajos, facturación y
-                materiales — todo en una plataforma construida para contratistas
-                en Puerto Rico.
+                Cotizar al paso y organizar tus proyectos en libretas está
+                destruyendo tus ganancias. Únete a FieldPro y empieza a cobrar
+                por todo lo que trabajas.
               </p>
             </div>
 
@@ -357,13 +357,6 @@ function HeroSection() {
                   className="transition-transform group-hover:translate-x-1"
                 />
               </Link>
-              <button
-                className="group flex items-center justify-center gap-2 px-8 py-4 text-base font-medium rounded-xl border-2 border-white/30 backdrop-blur-sm transition-all hover:bg-white/10"
-                style={{ color: "white" }}
-              >
-                <Play size={18} className="fill-current" />
-                Ver demo
-              </button>
             </div>
 
             {/* Trust Indicators */}
@@ -617,49 +610,49 @@ function FeaturesSection() {
   const features = [
     {
       icon: Sparkles,
-      title: "Cotizaciones con IA",
+      title: "Cotiza Exacto, Sin Regalar Trabajo",
       description:
-        "Describe el proyecto por voz, texto o fotos. Nuestra IA genera cotizaciones profesionales en segundos con precios actualizados.",
+        "Deja que la IA calcule con base a precios reales. Nunca más pierdas dinero por olvidar cobrar clavos, pintura o detalles del alcance.",
       color: THEME.teal[500],
       bgColor: THEME.teal[50],
     },
     {
       icon: FileText,
-      title: "PDFs Profesionales",
+      title: "Propuestas que Justifican tu Precio",
       description:
-        "Genera propuestas impresionantes con tu logo y marca personal. Compártelas directamente con clientes desde la plataforma.",
+        "Genera contratos en PDF con tu logo que separan a los profesionales de los 'chiveros'. Cierra más ventas a los precios correctos.",
       color: THEME.amber[500],
       bgColor: "#fff7ed",
     },
     {
       icon: Briefcase,
-      title: "Gestión de Trabajos",
+      title: "Control Total, Cero Desorganización",
       description:
-        "Convierte cotizaciones en trabajos activos. Asigna tareas, rastrea progreso y maneja cambios de alcance fácilmente.",
+        "No más libretas perdidas. Administra tus proyectos y asume la responsabilidad que exigen los buenos clientes comerciales o residenciales.",
       color: THEME.teal[500],
       bgColor: THEME.teal[50],
     },
     {
       icon: Receipt,
-      title: "Facturación Rápida",
+      title: "Asegura tu Flujo de Efectivo",
       description:
-        "Genera facturas desde trabajos completados. Rastrea pagos, vencimientos y envía recordatorios automáticos.",
+        "El trabajo no termina hasta que cobras. Genera facturas profesionales en segundos y elimina la incomodidad de 'cobrar por WhatsApp'.",
       color: THEME.amber[500],
       bgColor: "#fff7ed",
     },
     {
       icon: ShoppingCart,
-      title: "Lista de Materiales",
+      title: "Materiales Reales (Home Depot PR)",
       description:
-        "Precios de Home Depot PR actualizados al momento. La IA calcula cantidades directo desde la cotización.",
+        "Se acabó el adivinar o cotizar por debajo del costo real del patio. Extraemos los precios de Home Depot PR directamente a tu cotización.",
       color: THEME.teal[500],
       bgColor: THEME.teal[50],
     },
     {
       icon: Users,
-      title: "CRM de Clientes",
+      title: "Retén a los Mejores Clientes",
       description:
-        "Gestiona clientes residenciales y comerciales. Notas, etiquetas, historial de proyectos y contactos en un solo lugar.",
+        "Un cliente que experimenta tu organización y transparencia con FieldPro, no buscará a nadie más. Guarda todo su historial en un solo lugar.",
       color: THEME.amber[500],
       bgColor: "#fff7ed",
     },
@@ -735,30 +728,30 @@ function HowItWorksSection() {
     {
       number: "01",
       icon: MessageSquare,
-      title: "Describe el proyecto",
+      title: "Organiza el desorden",
       description:
-        "Usa voz, texto o fotos para describir el trabajo. La IA entiende el alcance automáticamente.",
+        "Usa voz o fotos y deja que la IA arme el alcance. No volverás a olvidar cobrar por clavos o pintura.",
     },
     {
       number: "02",
       icon: Calculator,
-      title: "Genera la cotización",
+      title: "Cotiza con precisión",
       description:
-        "En segundos, obtienes una cotización profesional con precios actualizados de materiales.",
+        "En segundos, obtienes el costo real con precios exactos de Home Depot PR. Se acabó el cotizar al 'ojo'.",
     },
     {
       number: "03",
       icon: Send,
-      title: "Envía al cliente",
+      title: "Proyecta profesionalismo",
       description:
-        "Comparte la propuesta por email o enlace. El cliente puede aprovarla digitalmente.",
+        "Envía contratos formales en PDF. Sepárate de los 'chiveros' y cobra lo que realmente vale tu trabajo.",
     },
     {
       number: "04",
       icon: CheckCircle,
-      title: "Gestiona y factura",
+      title: "Elimina el cobro informal",
       description:
-        "Convierte en trabajo, rastrea el progreso y factura cuando esté listo.",
+        "Se acabó el 'cobrar por WhatsApp'. Convierte aprobaciones en facturas formales y asegura tu dinero.",
     },
   ];
 
@@ -790,11 +783,11 @@ function HowItWorksSection() {
             className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6"
             style={{ fontFamily: THEME.fonts.display, color: THEME.stone[900] }}
           >
-            De la idea a la factura en minutos
+            Del desorden a la rentabilidad total
           </h2>
           <p className="text-lg" style={{ color: THEME.stone[600] }}>
-            Nuestro proceso simplificado te permite enfocarte en construir, no
-            en papeleo.
+            Nuestro proceso te obliga a ser organizado, calcular los precios
+            exactos y cobrar como el profesional que eres.
           </p>
         </div>
 
@@ -918,21 +911,20 @@ function ShowcaseSection() {
                 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight"
                 style={{ fontFamily: THEME.fonts.display }}
               >
-                Administra todo desde cualquier lugar
+                Rescata tus márgenes de ganancia hoy
               </h2>
               <p className="text-lg text-white/70 leading-relaxed">
-                Ya sea en la oficina o en la obra, accede a tus proyectos,
-                cotizaciones y facturas desde cualquier dispositivo. FieldPro
-                está optimizado para trabajar en el campo.
+                Cada detalle que olvidas cobrar es dinero que sale de tu
+                bolsillo. FieldPro te obliga a ser organizado, calcular los
+                precios reales y dejar de subsidiar proyectos.
               </p>
             </div>
 
             {/* Benefits List */}
             <div className="space-y-4">
               {[
-                "Acceso offline disponible",
-                "Sincronización automática",
-                "App móvil optimizada",
+                "Cotizaciones Profesionales en Segundos",
+                "Sincronización automática de precios",
                 "Comparte fotos del proyecto",
                 "Notificaciones en tiempo real",
               ].map((benefit, i) => (
@@ -963,7 +955,7 @@ function TestimonialsSection() {
   const testimonials = [
     {
       quote:
-        "FieldPro redujo mi tiempo de cotización de horas a minutos. La IA entiende exactamente lo que necesito.",
+        "Antes perdía dinero porque se me olvidaba cobrar pintura y clavos. Ahora la IA no deja que se me escape ni un centavo en materiales.",
       author: "Carlos Rodríguez",
       role: "Contratista General",
       company: "CR Construcciones",
@@ -971,7 +963,7 @@ function TestimonialsSection() {
     },
     {
       quote:
-        "Los precios de Home Depot PR actualizados son un game-changer. Ya no tengo que revisar precios manualmente.",
+        "Cotizar al 'ojo' casi quiebra mi negocio. Con los precios de Home Depot PR reales en la plataforma, por fin sé exactamente cuánto voy a ganar.",
       author: "María Santos",
       role: "CEO",
       company: "Santos Remodeling",
@@ -979,7 +971,7 @@ function TestimonialsSection() {
     },
     {
       quote:
-        "Finalmente una plataforma diseñada para Puerto Rico. El soporte en español y la interfaz intuitiva son excelentes.",
+        "Enviar PDFs profesionales eliminó a los clientes malos que solo buscan precio barato. Ahora los clientes serios nos respetan como empresa.",
       author: "José Martínez",
       role: "Propietario",
       company: "Martínez Electric",
@@ -1122,17 +1114,17 @@ function PricingSection() {
             className="inline-block text-sm font-bold tracking-widest uppercase mb-4"
             style={{ color: THEME.teal[600] }}
           >
-            Precios simples
+            Inversión
           </span>
           <h2
             className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6"
             style={{ fontFamily: THEME.fonts.display, color: THEME.stone[900] }}
           >
-            Sin sorpresas, sin contratos
+            Cuesta menos que los materiales que olvidas cobrar
           </h2>
           <p className="text-lg" style={{ color: THEME.stone[600] }}>
-            Comienza gratis y escala cuando estés listo. Sin tarjeta de crédito
-            requerida.
+            El precio de no usar FieldPro es todo el dinero que estás perdiendo
+            en proyectos mal cotizados.
           </p>
         </div>
 
@@ -1235,11 +1227,11 @@ function CTASection() {
           className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6"
           style={{ fontFamily: THEME.fonts.display }}
         >
-          Listo para transformar tu negocio?
+          ¿Listo para dejar de regalar tu trabajo?
         </h2>
         <p className="text-xl text-white/80 mb-10 max-w-2xl mx-auto">
-          Únete a +500 contratistas en Puerto Rico que ya están ahorrando horas
-          cada semana con FieldPro.
+          Únete a +500 contratistas en Puerto Rico que ya dejaron de perder
+          dinero por malas cotizaciones y desorden administrativo.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -1251,9 +1243,6 @@ function CTASection() {
             Comenzar gratis ahora
             <ArrowRight size={20} />
           </Link>
-          <button className="flex items-center justify-center gap-2 px-8 py-4 text-base font-medium rounded-xl border-2 border-white/30 text-white transition-all hover:bg-white/10">
-            Agendar demo
-          </button>
         </div>
 
         <p className="mt-6 text-sm text-white/60">

@@ -82,26 +82,34 @@ export function ClientDetail({ client }: { client: ClientData }) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/clients">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3 min-w-0">
+          <Link href="/clients" className="shrink-0">
             <Button variant="ghost" size="icon">
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="font-heading text-3xl font-bold">{client.name}</h1>
-              <Badge variant={client.status === "ACTIVE" ? "default" : "secondary"}>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="font-heading text-2xl sm:text-3xl font-bold truncate">
+                {client.name}
+              </h1>
+              <Badge
+                variant={client.status === "ACTIVE" ? "default" : "secondary"}
+              >
                 {client.status}
               </Badge>
             </div>
-            <p className="text-muted-foreground">{client.type === "COMMERCIAL" ? "Cliente Comercial" : "Cliente Residencial"}</p>
+            <p className="text-muted-foreground text-sm">
+              {client.type === "COMMERCIAL"
+                ? "Cliente Comercial"
+                : "Cliente Residencial"}
+            </p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 sm:shrink-0">
           <Link href={`/clients/${client.id}/edit`}>
-            <Button variant="outline">
+            <Button variant="outline" size="sm">
               <Edit className="mr-2 h-4 w-4" />
               Editar
             </Button>
@@ -109,6 +117,7 @@ export function ClientDetail({ client }: { client: ClientData }) {
           {client.status !== "ARCHIVED" && (
             <Button
               variant="destructive"
+              size="sm"
               onClick={() => archiveClient.mutate({ id: client.id })}
               disabled={archiveClient.isPending}
             >
@@ -147,47 +156,50 @@ export function ClientDetail({ client }: { client: ClientData }) {
                 </div>
               )}
 
-              {primaryAddress && (() => {
-                const fullAddress = `${primaryAddress.street}, ${primaryAddress.city}, ${primaryAddress.state} ${primaryAddress.zipCode}`;
-                const encoded = encodeURIComponent(fullAddress);
-                const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encoded}`;
-                const wazeUrl = `https://waze.com/ul?q=${encoded}&navigate=yes`;
+              {primaryAddress &&
+                (() => {
+                  const fullAddress = `${primaryAddress.street}, ${primaryAddress.city}, ${primaryAddress.state} ${primaryAddress.zipCode}`;
+                  const encoded = encodeURIComponent(fullAddress);
+                  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encoded}`;
+                  const wazeUrl = `https://waze.com/ul?q=${encoded}&navigate=yes`;
 
-                return (
-                  <div className="flex items-start gap-3">
-                    <MapPin className="mt-1 h-5 w-5 text-muted-foreground" />
-                    <div className="flex-1">
-                      <p className="text-sm text-muted-foreground">Dirección</p>
-                      <p className="font-medium">
-                        {primaryAddress.street}
-                        <br />
-                        {primaryAddress.city}, {primaryAddress.state}{" "}
-                        {primaryAddress.zipCode}
-                      </p>
-                      <div className="mt-2 flex gap-2">
-                        <a
-                          href={googleMapsUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-blue-700"
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                          Google Maps
-                        </a>
-                        <a
-                          href={wazeUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 rounded-md bg-cyan-500 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-cyan-600"
-                        >
-                          <Navigation className="h-3 w-3" />
-                          Waze
-                        </a>
+                  return (
+                    <div className="flex items-start gap-3">
+                      <MapPin className="mt-1 h-5 w-5 text-muted-foreground" />
+                      <div className="flex-1">
+                        <p className="text-sm text-muted-foreground">
+                          Dirección
+                        </p>
+                        <p className="font-medium">
+                          {primaryAddress.street}
+                          <br />
+                          {primaryAddress.city}, {primaryAddress.state}{" "}
+                          {primaryAddress.zipCode}
+                        </p>
+                        <div className="mt-2 flex gap-2">
+                          <a
+                            href={googleMapsUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-blue-700"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                            Google Maps
+                          </a>
+                          <a
+                            href={wazeUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 rounded-md bg-cyan-500 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-cyan-600"
+                          >
+                            <Navigation className="h-3 w-3" />
+                            Waze
+                          </a>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })()}
+                  );
+                })()}
 
               {!client.email && !client.phone && !primaryAddress && (
                 <p className="text-sm text-muted-foreground">

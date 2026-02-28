@@ -32,6 +32,7 @@ import { JobTasks } from "./job-tasks";
 import { ChangeOrders } from "./change-orders";
 import { MaterialShoppingList } from "./material-shopping-list";
 import { JobExpenses } from "./job-expenses";
+import { JobPhotos } from "./job-photos";
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -170,27 +171,27 @@ export function JobDetail({ initialJob }: { initialJob: { id: string } }) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/jobs">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex items-center gap-3 min-w-0">
+          <Link href="/jobs" className="shrink-0">
             <Button variant="ghost" size="icon">
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="font-heading text-3xl font-bold">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="font-heading text-2xl sm:text-3xl font-bold">
                 {job.jobNumber}
               </h1>
               <JobStatusBadge status={job.status} />
             </div>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground text-sm truncate">
               {job.client.name}
               {job.title && ` — ${job.title}`}
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 sm:shrink-0">
           {actions.map((action) => (
             <Button
               key={action.status}
@@ -384,6 +385,9 @@ export function JobDetail({ initialJob }: { initialJob: { id: string } }) {
           {/* Material Shopping List */}
           <MaterialShoppingList jobId={job.id} hasQuote={!!job.quote} />
 
+          {/* Fotos del Proyecto */}
+          <JobPhotos jobId={job.id} jobStatus={job.status} />
+
           {/* Quote Link */}
           {job.quote && (
             <Card>
@@ -420,7 +424,7 @@ export function JobDetail({ initialJob }: { initialJob: { id: string } }) {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {job.invoice ? (
+              {job.invoice && job.invoice.status !== "CANCELLED" ? (
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">

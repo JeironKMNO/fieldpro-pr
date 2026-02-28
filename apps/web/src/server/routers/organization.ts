@@ -211,10 +211,10 @@ export const organizationRouter = router({
         ctx.db.invoice.findMany({
           where: {
             organizationId: orgId,
-            status: "PAID",
-            paidAt: { gte: sixMonthsAgo },
+            status: { notIn: ["CANCELLED", "DRAFT"] },
+            createdAt: { gte: sixMonthsAgo },
           },
-          select: { total: true, paidAt: true },
+          select: { total: true, createdAt: true, paidAt: true, status: true },
         }),
         ctx.db.expense.findMany({
           where: {
@@ -260,15 +260,22 @@ export const organizationRouter = router({
         last6Months.push(key);
       }
 
-      const invoiceByMonth = new Map<string, number>();
+      // Split into paid (by paidAt) vs pending/billed (by createdAt)
+      const paidByMonth = new Map<string, number>();
+      const pendingByMonth = new Map<string, number>();
       for (const inv of paidInvoicesRaw) {
-        if (!inv.paidAt) continue;
-        const d = new Date(inv.paidAt);
-        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-        invoiceByMonth.set(
-          key,
-          (invoiceByMonth.get(key) ?? 0) + Number(inv.total)
-        );
+        if (inv.status === "PAID" && inv.paidAt) {
+          const d = new Date(inv.paidAt);
+          const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+          paidByMonth.set(key, (paidByMonth.get(key) ?? 0) + Number(inv.total));
+        } else {
+          const d = new Date(inv.createdAt);
+          const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+          pendingByMonth.set(
+            key,
+            (pendingByMonth.get(key) ?? 0) + Number(inv.total)
+          );
+        }
       }
 
       const expenseByMonth = new Map<string, number>();
@@ -284,20 +291,23 @@ export const organizationRouter = router({
       const monthlyFinancials = last6Months.map((month) => ({
         month,
         label: MONTH_LABELS_ES[month.split("-")[1]!] ?? month,
-        invoiceRevenue: invoiceByMonth.get(month) ?? 0,
+        invoiceRevenue:
+          (paidByMonth.get(month) ?? 0) + (pendingByMonth.get(month) ?? 0),
+        invoicePaid: paidByMonth.get(month) ?? 0,
+        invoicePending: pendingByMonth.get(month) ?? 0,
         expenses: expenseByMonth.get(month) ?? 0,
       }));
 
-      const totalPaidInv = Number(totalPaidInvoicesAgg._sum.total ?? 0);
+      const completedVal = Number(completedJobsAgg._sum.value ?? 0);
       const totalExp = Number(totalExpensesAgg._sum.amount ?? 0);
       const profitMetrics = {
-        completedJobValue: Number(completedJobsAgg._sum.value ?? 0),
+        completedJobValue: completedVal,
         totalExpenses: totalExp,
-        totalPaidInvoices: totalPaidInv,
-        netProfit: totalPaidInv - totalExp,
+        totalPaidInvoices: Number(totalPaidInvoicesAgg._sum.total ?? 0),
+        netProfit: completedVal - totalExp,
         profitMargin:
-          totalPaidInv > 0
-            ? ((totalPaidInv - totalExp) / totalPaidInv) * 100
+          completedVal > 0
+            ? ((completedVal - totalExp) / completedVal) * 100
             : 0,
       };
 

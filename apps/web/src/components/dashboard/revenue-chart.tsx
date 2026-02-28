@@ -20,7 +20,9 @@ import {
 interface MonthData {
   month: string;
   label: string;
-  invoiceRevenue: number;
+  invoiceRevenue: number; // total billed (paid + pending)
+  invoicePaid: number; // cash actually collected
+  invoicePending: number; // billed but not yet paid
   expenses: number;
 }
 
@@ -49,7 +51,12 @@ function CustomTooltip({
             style={{ background: p.color }}
           />
           <span className="text-slate-500">
-            {p.name === "invoiceRevenue" ? "Ingresos" : "Gastos"}:
+            {p.name === "invoiceRevenue"
+              ? "Facturado"
+              : p.name === "invoicePaid"
+                ? "Cobrado"
+                : "Gastos"}
+            :
           </span>
           <span className="font-medium text-slate-800">
             {new Intl.NumberFormat("en-US", {
@@ -80,7 +87,7 @@ export function RevenueChart({ data }: { data: MonthData[] }) {
             currency: "USD",
             maximumFractionDigits: 0,
           }).format(totalRevenue)}{" "}
-          cobrado
+          facturado
         </p>
       </CardHeader>
       <CardContent>
@@ -121,7 +128,11 @@ export function RevenueChart({ data }: { data: MonthData[] }) {
               <Legend
                 wrapperStyle={{ fontSize: 11, paddingTop: 8 }}
                 formatter={(value) =>
-                  value === "invoiceRevenue" ? "Ingresos" : "Gastos"
+                  value === "invoiceRevenue"
+                    ? "Facturado"
+                    : value === "invoicePaid"
+                      ? "Cobrado"
+                      : "Gastos"
                 }
               />
               <Area
@@ -132,6 +143,16 @@ export function RevenueChart({ data }: { data: MonthData[] }) {
                 fill="url(#gradRevenue)"
                 dot={false}
                 activeDot={{ r: 4, fill: "#10b981" }}
+              />
+              <Area
+                type="monotone"
+                dataKey="invoicePaid"
+                stroke="#059669"
+                strokeWidth={1.5}
+                strokeDasharray="4 2"
+                fill="none"
+                dot={false}
+                activeDot={{ r: 3, fill: "#059669" }}
               />
               <Area
                 type="monotone"

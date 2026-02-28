@@ -312,6 +312,26 @@ export const jobRouter = router({
       });
     }),
 
+  updateValue: protectedProcedure
+    .input(
+      z.object({
+        jobId: z.string(),
+        value: z.number().min(0),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const job = await ctx.db.job.findFirst({
+        where: { id: input.jobId, organizationId: ctx.auth.organizationId },
+      });
+      if (!job) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Job not found" });
+      }
+      return ctx.db.job.update({
+        where: { id: input.jobId },
+        data: { value: input.value },
+      });
+    }),
+
   budgetSummary: protectedProcedure
     .input(z.object({ jobId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -372,5 +392,72 @@ export const jobRouter = router({
               ? "BREAK_EVEN"
               : "LOSS",
       };
+    }),
+
+  // ==========================================
+  // JOB PHOTOS
+  // ==========================================
+
+  getPhotos: protectedProcedure
+    .input(z.object({ jobId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      // Validate job belongs to org
+      const job = await ctx.db.job.findFirst({
+        where: { id: input.jobId, organizationId: ctx.auth.organizationId },
+      });
+      if (!job) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Job not found" });
+      }
+
+      return ctx.db.jobPhoto.findMany({
+        where: { jobId: input.jobId },
+        orderBy: { createdAt: "desc" },
+      });
+    }),
+
+  addPhoto: protectedProcedure
+    .input(
+      z.object({
+        jobId: z.string(),
+        url: z.string(),
+        caption: z.string().optional(),
+        type: z.enum(["BEFORE", "DURING", "AFTER", "OTHER"]).default("OTHER"),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Validate job belongs to org
+      const job = await ctx.db.job.findFirst({
+        where: { id: input.jobId, organizationId: ctx.auth.organizationId },
+      });
+      if (!job) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Job not found" });
+      }
+
+      return ctx.db.jobPhoto.create({
+        data: {
+          jobId: input.jobId,
+          url: input.url,
+          caption: input.caption,
+          type: input.type,
+        },
+      });
+    }),
+
+  deletePhoto: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      // Find photo and verify it belongs to a job in the user's org
+      const photo = await ctx.db.jobPhoto.findUnique({
+        where: { id: input.id },
+        include: { job: true },
+      });
+
+      if (!photo || photo.job.organizationId !== ctx.auth.organizationId) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Photo not found" });
+      }
+
+      return ctx.db.jobPhoto.delete({
+        where: { id: input.id },
+      });
     }),
 });

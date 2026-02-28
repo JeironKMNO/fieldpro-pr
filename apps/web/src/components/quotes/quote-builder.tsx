@@ -249,16 +249,16 @@ export function QuoteBuilder({
 
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/quotes">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex items-center gap-3 min-w-0">
+            <Link href="/quotes" className="shrink-0">
               <Button variant="ghost" size="icon">
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             </Link>
-            <div>
-              <div className="flex items-center gap-3">
-                <h1 className="font-heading text-3xl font-bold">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="font-heading text-2xl sm:text-3xl font-bold">
                   {quote.quoteNumber}
                 </h1>
                 {/* Clickable status badge — manual override */}
@@ -291,13 +291,13 @@ export function QuoteBuilder({
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground text-sm truncate">
                 {quote.client.name}
                 {quote.title && ` — ${quote.title}`}
               </p>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2 sm:shrink-0">
             {/* AI Assistant Button */}
             {isDraft && (
               <Button
@@ -420,7 +420,6 @@ export function QuoteBuilder({
             <QuoteSectionCard
               key={section.id}
               section={section}
-              quoteId={quote.id}
               isDraft={isDraft}
               onUpdate={invalidateQuote}
             />

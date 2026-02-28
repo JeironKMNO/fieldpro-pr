@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc/client";
 import { Button } from "@fieldpro/ui/components/button";
 import {
@@ -27,6 +27,9 @@ import {
   AlertTriangle,
   CheckCircle2,
   MinusCircle,
+  Pencil,
+  Check,
+  X,
 } from "lucide-react";
 
 function formatCurrency(value: number): string {
@@ -190,7 +193,6 @@ export function JobExpenses({
   // AI receipt scanner state
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isScanning, setIsScanning] = useState(false);
-  const [scanResult, setScanResult] = useState<SuggestedExpense | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [scanDescription, setScanDescription] = useState("");
   const [scanAmount, setScanAmount] = useState("");
@@ -204,6 +206,11 @@ export function JobExpenses({
   const [budgetMat, setBudgetMat] = useState(String(matBudget || ""));
   const [budgetOps, setBudgetOps] = useState(String(opsBudget || ""));
 
+  // Inline value edit state
+  const [isEditingValue, setIsEditingValue] = useState(false);
+  const [editValue, setEditValue] = useState(String(jobValue || ""));
+  const valueInputRef = useRef<HTMLInputElement>(null);
+
   const utils = trpc.useUtils();
   const { data: expenses, isLoading } = trpc.expense.byJobId.useQuery({
     jobId,
@@ -214,7 +221,7 @@ export function JobExpenses({
       utils.expense.byJobId.invalidate({ jobId });
       setIsDialogOpen(false);
       setIsConfirmOpen(false);
-      setScanResult(null);
+
       setDescription("");
       setAmount("");
       setVendor("");
@@ -234,6 +241,20 @@ export function JobExpenses({
       setShowBudgetForm(false);
     },
   });
+
+  const updateValueMutation = trpc.job.updateValue.useMutation({
+    onSuccess: () => {
+      utils.job.byId.invalidate();
+      setIsEditingValue(false);
+    },
+  });
+
+  useEffect(() => {
+    if (isEditingValue && valueInputRef.current) {
+      valueInputRef.current.focus();
+      valueInputRef.current.select();
+    }
+  }, [isEditingValue]);
 
   // Totals
   const totalExpenses =
@@ -283,7 +304,6 @@ export function JobExpenses({
       };
 
       const suggested = data.suggested_expense;
-      setScanResult(suggested);
       setScanDescription(suggested.description);
       setScanAmount(String(suggested.amount));
       setScanDate(suggested.date);
@@ -377,12 +397,82 @@ export function JobExpenses({
         {/* Summary Cards */}
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="rounded-lg border bg-stone-50 p-3">
-            <div className="text-sm font-medium text-stone-500">
-              Valor del Trabajo
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-medium text-stone-500">
+                Valor del Trabajo
+              </div>
+              {!isEditingValue && (
+                <button
+                  onClick={() => {
+                    setEditValue(String(jobValue));
+                    setIsEditingValue(true);
+                  }}
+                  className="text-stone-400 hover:text-stone-600 transition-colors"
+                  title="Editar valor"
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                </button>
+              )}
             </div>
-            <div className="mt-1 text-2xl font-bold">
-              {formatCurrency(jobValue)}
-            </div>
+            {isEditingValue ? (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const parsed = parseFloat(editValue);
+                  if (!isNaN(parsed) && parsed >= 0) {
+                    updateValueMutation.mutate({ jobId, value: parsed });
+                  }
+                }}
+                className="mt-1 flex items-center gap-1"
+              >
+                <span className="text-stone-500 font-bold">$</span>
+                <input
+                  ref={valueInputRef}
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={editValue}
+                  onChange={(e) => setEditValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") {
+                      setIsEditingValue(false);
+                    }
+                  }}
+                  className="w-full rounded border border-stone-300 bg-white px-2 py-0.5 text-xl font-bold focus:border-stone-500 focus:outline-none"
+                />
+                <button
+                  type="submit"
+                  disabled={updateValueMutation.isPending}
+                  className="text-emerald-600 hover:text-emerald-700"
+                  title="Guardar"
+                >
+                  {updateValueMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Check className="h-4 w-4" />
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsEditingValue(false)}
+                  className="text-stone-400 hover:text-stone-600"
+                  title="Cancelar"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </form>
+            ) : (
+              <div
+                className="mt-1 text-2xl font-bold cursor-pointer hover:text-stone-600 transition-colors"
+                onClick={() => {
+                  setEditValue(String(jobValue));
+                  setIsEditingValue(true);
+                }}
+                title="Haz clic para editar"
+              >
+                {formatCurrency(jobValue)}
+              </div>
+            )}
           </div>
           <div className="rounded-lg border bg-rose-50 p-3">
             <div className="text-sm font-medium text-rose-600">
@@ -749,7 +839,6 @@ export function JobExpenses({
               variant="outline"
               onClick={() => {
                 setIsConfirmOpen(false);
-                setScanResult(null);
               }}
             >
               Cancelar
