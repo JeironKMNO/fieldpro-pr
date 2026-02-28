@@ -172,6 +172,11 @@ export const invoiceRouter = router({
         });
       }
 
+      // If a cancelled invoice exists, delete it first to free the unique jobId constraint
+      if (job.invoice?.status === "CANCELLED") {
+        await ctx.db.invoice.delete({ where: { id: job.invoice.id } });
+      }
+
       // Get user DB id
       const user = await ctx.db.user.findFirst({
         where: {
