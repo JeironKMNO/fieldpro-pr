@@ -5,9 +5,10 @@ import { auth } from "@clerk/nextjs/server";
 export async function GET() {
   const checks: Record<string, unknown> = {};
 
-  // 1. Check DB connectivity
+  // 1. Check DB connectivity — use $queryRawUnsafe to avoid Prisma.sql
+  // template-tag bundling issues in pnpm monorepos (same fix as organization.ts)
   try {
-    await prisma.$queryRaw`SELECT 1 as ok`;
+    await prisma.$queryRawUnsafe("SELECT 1 as ok");
     checks.database = "ok";
   } catch (err) {
     checks.database = `error: ${err instanceof Error ? err.message : String(err)}`;
