@@ -53,214 +53,296 @@ function formatCurrency(value: unknown): string {
 
 function formatDate(date: Date | string): string {
   return new Date(date).toLocaleDateString("es-PR", {
-    month: "long",
     day: "numeric",
+    month: "long",
     year: "numeric",
   });
+}
+
+const DEFAULT_CONDITIONS = [
+  "Cualquier trabajo adicional no especificado en esta propuesta será considerado trabajo extra y requerirá una orden de cambio aprobada y firmada por el cliente.",
+  "El tiempo estimado de ejecución podrá variar dependiendo de condiciones imprevistas del proyecto o factores fuera del control del contratista.",
+  "Cambios solicitados por el cliente durante la ejecución del proyecto podrían afectar el costo final y el tiempo de entrega.",
+  "Esta cotización tiene validez de 30 días a partir de la fecha de emisión, sujeta a disponibilidad de materiales y mano de obra.",
+];
+
+const INCLUDED_SERVICES = [
+  {
+    text: "Los materiales necesarios para la ejecución del proyecto (excepto los provistos por el cliente).",
+    bold: false,
+  },
+  { text: "Mano de obra especializada.", bold: false },
+  { text: "Herramientas y equipo necesario.", bold: false },
+  {
+    text: "Disposición de escombros generados durante el proyecto.",
+    bold: true,
+  },
+];
+
+function SectionHeader({ num, title }: { num: number; title: string }) {
+  return (
+    <div className="flex items-start gap-3 mt-7 mb-3">
+      <span
+        className="text-2xl font-bold leading-none"
+        style={{ color: "#C9962B" }}
+      >
+        {num}
+      </span>
+      <h3 className="text-xl font-bold" style={{ color: "#1B2661" }}>
+        {title}
+      </h3>
+    </div>
+  );
 }
 
 export function QuotePreview({ quote }: { quote: PreviewQuote }) {
   const primaryAddress = quote.client.addresses[0];
   const { logoUrl, phone, license } = quote.organization;
-  const hasCompanyDetails = phone || license;
+  const taxRate = Number(quote.taxRate);
+  const taxAmount = Number(quote.taxAmount);
+  const subtotal = Number(quote.subtotal);
+  const hasTax = taxAmount > 0 && subtotal > 0;
+
+  const categoryList = quote.sections
+    .map((s) => s.category.name.toLowerCase())
+    .join(", ");
+
+  const projectDesc = `El presente documento describe los trabajos de ${categoryList} a realizar en la propiedad${primaryAddress ? ` ubicada en ${primaryAddress.city}` : " del cliente"}. Los trabajos incluyen ${categoryList}. Todos los trabajos serán ejecutados por personal especializado siguiendo los estándares de construcción aplicables en Puerto Rico.`;
 
   return (
-    <div className="mx-auto max-w-3xl rounded-xl border border-slate-200 bg-white shadow-xl overflow-hidden print:border-none print:shadow-none">
-      {/* ── Header ── */}
-      <div className="bg-slate-900 px-10 py-8 text-white relative">
-        <div className="flex items-start justify-between">
-          <div className="flex items-start gap-4">
-            {logoUrl ? (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img
-                src={logoUrl}
-                alt={quote.organization.name}
-                className="h-16 w-16 rounded-lg object-contain bg-white/10 p-1.5 shadow-inner"
-              />
-            ) : null}
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight">
-                {quote.organization.name}
-              </h1>
-              {hasCompanyDetails ? (
-                <p className="mt-1.5 text-xs text-slate-400 font-medium tracking-wide">
-                  {[
-                    license ? `Lic. ${license}` : null,
-                    phone ? `Tel. ${phone}` : null,
-                  ]
-                    .filter(Boolean)
-                    .join("  |  ")}
-                </p>
-              ) : null}
-            </div>
-          </div>
-          <div className="text-right">
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-400 mb-2">
-              Propuesta de Servicios
+    <div
+      className="mx-auto max-w-3xl bg-white shadow-xl overflow-hidden print:shadow-none print:border-none"
+      style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}
+    >
+      {/* ── HEADER ── */}
+      <div className="px-10 pt-8 pb-4 flex items-start gap-4">
+        {logoUrl ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src={logoUrl}
+            alt={quote.organization.name}
+            className="h-16 w-16 object-contain border border-gray-200 rounded"
+          />
+        ) : null}
+        <div>
+          <h1
+            className="text-2xl font-bold tracking-wide"
+            style={{ color: "#1B2661" }}
+          >
+            {quote.organization.name}
+          </h1>
+          <p className="text-[11px] text-gray-400 tracking-widest uppercase mt-1">
+            SERVICIOS DE CONSTRUCCIÓN Y REMODELACIÓN
+          </p>
+          {license ? (
+            <p className="text-sm text-gray-500 mt-0.5">
+              <span className="font-semibold text-gray-600">Licencia:</span>{" "}
+              {license}
             </p>
-            <h2 className="text-xl font-bold tracking-tight">
-              {quote.quoteNumber}
-            </h2>
-            {quote.title ? (
-              <p className="mt-1 text-sm text-slate-300">{quote.title}</p>
-            ) : null}
-            <p className="mt-2 text-xs text-slate-400">
-              {formatDate(quote.createdAt)}
+          ) : null}
+          {phone ? (
+            <p className="text-sm text-gray-500 mt-0.5">
+              <span className="font-semibold text-gray-600">Teléfono:</span>{" "}
+              {phone}
             </p>
-            {quote.validUntil ? (
-              <p className="text-xs text-slate-400 mt-0.5">
-                Válida hasta: {formatDate(quote.validUntil)}
-              </p>
-            ) : null}
-          </div>
+          ) : null}
         </div>
       </div>
 
-      {/* Emerald Accent Stripe */}
-      <div className="h-1.5 w-full bg-emerald-500" />
-
-      {/* ── Client info ── */}
-      <div className="bg-slate-50 px-10 py-6 border-b border-slate-200">
-        <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
-          Facturar a
+      {/* ── WATERMARK ── */}
+      <div className="text-center px-10 py-1 select-none overflow-hidden">
+        <p
+          className="text-7xl font-bold tracking-[0.25em] leading-none"
+          style={{ color: "#EBEBEB" }}
+        >
+          COTIZACIÓN
         </p>
-        <p className="font-bold text-slate-900 text-lg">{quote.client.name}</p>
-        <div className="mt-2 space-y-1">
-          {quote.client.email ? (
-            <p className="text-sm text-slate-600">{quote.client.email}</p>
-          ) : null}
-          {quote.client.phone ? (
-            <p className="text-sm text-slate-600">{quote.client.phone}</p>
-          ) : null}
-          {primaryAddress ? (
-            <p className="text-sm text-slate-600">
-              {primaryAddress.street}, {primaryAddress.city},{" "}
-              {primaryAddress.state} {primaryAddress.zipCode}
-            </p>
-          ) : null}
-        </div>
       </div>
 
-      <div className="px-10 pb-10 pt-8">
-        {/* ── Sections ── */}
-        <div className="space-y-10">
-          {quote.sections.map((section, sectionIndex) => (
-            <div key={section.id} className="relative">
-              <div className="absolute left-0 top-0 h-full w-1 bg-emerald-500 rounded-full" />
-              <div className="pl-6">
-                <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2">
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 text-[10px] text-emerald-700">
-                    {sectionIndex + 1}
-                  </span>
-                  {section.category.name}
-                </h3>
-                <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-                  <table className="w-full text-sm">
-                    <thead className="bg-slate-50 border-b border-slate-200">
-                      <tr className="text-xs text-slate-500 uppercase tracking-wider">
-                        <th className="py-3 px-5 text-left font-semibold">
-                          Desglose de Trabajo
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {section.items.map((item, rowIndex) => (
-                        <tr
-                          key={item.id}
-                          className={
-                            rowIndex % 2 === 0 ? "bg-white" : "bg-slate-50/30"
-                          }
-                        >
-                          <td className="py-3 px-5 text-slate-700">
-                            <div className="flex items-start gap-3">
-                              <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-emerald-400 shrink-0" />
-                              <span className="leading-relaxed">
-                                {item.description}
-                              </span>
-                            </div>
-                            {Number(item.length) > 0 &&
-                            Number(item.width) > 0 ? (
-                              <div className="ml-4.5 mt-1 text-xs text-slate-400">
-                                Dimensiones: {Number(item.length)} ×{" "}
-                                {Number(item.width)}
-                              </div>
-                            ) : null}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+      {/* ── SEPARATOR ── */}
+      <div className="mx-10 border-t border-gray-300 my-3" />
+
+      {/* ── INFO BOX ── */}
+      <div
+        className="mx-10 mb-6 rounded-md p-4 space-y-1.5"
+        style={{ backgroundColor: "#EBF2FD" }}
+      >
+        {quote.title ? (
+          <p className="text-sm">
+            <span className="font-bold" style={{ color: "#1B2661" }}>
+              Proyecto:
+            </span>{" "}
+            <span style={{ color: "#1B2661" }}>{quote.title}</span>
+          </p>
+        ) : null}
+        <p className="text-sm">
+          <span className="font-bold" style={{ color: "#1B2661" }}>
+            Fecha:
+          </span>{" "}
+          <span style={{ color: "#1B2661" }}>
+            {formatDate(quote.createdAt)}
+          </span>
+        </p>
+        <p className="text-sm">
+          <span className="font-bold" style={{ color: "#1B2661" }}>
+            Cliente:
+          </span>{" "}
+          <span style={{ color: "#1B2661" }}>{quote.client.name}</span>
+        </p>
+        {primaryAddress ? (
+          <p className="text-sm">
+            <span className="font-bold" style={{ color: "#1B2661" }}>
+              Dirección:
+            </span>{" "}
+            <span style={{ color: "#1B2661" }}>
+              {primaryAddress.street}, {primaryAddress.city},{" "}
+              {primaryAddress.state}
+            </span>
+          </p>
+        ) : null}
+      </div>
+
+      {/* ── CONTENT ── */}
+      <div className="px-10 pb-10">
+        {/* SECCIÓN 1: DESCRIPCIÓN */}
+        <SectionHeader num={1} title="Descripción del Proyecto" />
+        <p className="text-sm text-gray-700 leading-relaxed mb-4">
+          {projectDesc}
+        </p>
+
+        {/* SECCIÓN 2: ALCANCE */}
+        <SectionHeader num={2} title="Alcance de los Trabajos" />
+        <div className="space-y-6">
+          {quote.sections.map((section, idx) => (
+            <div key={section.id}>
+              <h4 className="text-sm font-bold text-gray-700 border-b border-gray-300 pb-2 mb-3">
+                2.{idx + 1} {section.category.name}
+              </h4>
+              <p className="text-sm text-gray-700 mb-2">Trabajos incluidos:</p>
+              <ul className="space-y-2">
+                {section.items.map((item) => (
+                  <li
+                    key={item.id}
+                    className="flex items-start gap-2 text-sm text-gray-700"
+                  >
+                    <span className="mt-0.5 text-gray-500 shrink-0">•</span>
+                    <div>
+                      <span>{item.description}</span>
+                      {Number(item.length) > 0 && Number(item.width) > 0 ? (
+                        <span className="block text-xs text-gray-400 mt-0.5">
+                          Dimensiones: {Number(item.length)} ×{" "}
+                          {Number(item.width)} ft
+                        </span>
+                      ) : null}
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </div>
           ))}
         </div>
 
-        {/* ── Totals ── */}
-        <div className="mt-12 flex justify-end">
-          <div className="w-full max-w-sm rounded-xl border-2 border-emerald-500 bg-emerald-50/30 overflow-hidden shadow-sm">
-            <div className="bg-emerald-500 px-4 py-2 text-center">
-              <h4 className="text-[10px] font-bold uppercase tracking-widest text-white">
-                Inversión Total
-              </h4>
-            </div>
-            <div className="p-6 text-center">
-              <div className="text-3xl font-bold text-emerald-700 tracking-tight">
-                {formatCurrency(quote.total)}
-              </div>
-              <p className="mt-3 text-[10px] font-medium text-emerald-600/80 uppercase tracking-widest">
-                (Materiales, Mano de Obra e Impuestos)
-              </p>
-            </div>
-          </div>
-        </div>
+        {/* SECCIÓN 3: MATERIALES */}
+        <SectionHeader num={3} title="Materiales y Servicios Incluidos" />
+        <p className="text-sm text-gray-700 mb-3">
+          El contratista será responsable de proveer:
+        </p>
+        <ul className="space-y-2 mb-4">
+          {INCLUDED_SERVICES.map((s, i) => (
+            <li
+              key={i}
+              className="flex items-start gap-2 text-sm text-gray-700"
+            >
+              <span className="mt-0.5 text-gray-500 shrink-0">•</span>
+              <span className={s.bold ? "font-bold" : ""}>{s.text}</span>
+            </li>
+          ))}
+        </ul>
 
-        {/* ── Terms & Signatures ── */}
-        <div className="mt-12 pt-8 border-t border-slate-200 space-y-10">
-          {quote.notes ? (
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
-                Términos y Condiciones
-              </p>
-              <div className="bg-slate-50 rounded-xl p-5 border border-slate-200 text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">
-                {quote.notes}
+        {/* SECCIÓN 4: INVERSIÓN */}
+        <div
+          className="rounded-lg py-8 px-6 text-center mt-6 mb-2"
+          style={{ backgroundColor: "#1B2661" }}
+        >
+          <p
+            className="font-bold text-base tracking-widest uppercase mb-3"
+            style={{ color: "#C9962B" }}
+          >
+            4. INVERSIÓN DEL PROYECTO
+          </p>
+          <p className="text-blue-200 text-xs tracking-widest uppercase mb-3">
+            COSTO TOTAL DEL PROYECTO
+          </p>
+          <p className="text-white text-5xl font-bold tracking-tight">
+            {formatCurrency(quote.total)}
+          </p>
+          {hasTax ? (
+            <div className="mt-4 pt-4 border-t border-blue-700">
+              <div className="flex justify-center gap-10 text-sm text-blue-300">
+                <span>Subtotal: {formatCurrency(subtotal)}</span>
+                <span>
+                  IVU ({(taxRate * 100).toFixed(1)}%):{" "}
+                  {formatCurrency(taxAmount)}
+                </span>
               </div>
             </div>
           ) : null}
+          <p className="text-blue-300 text-xs mt-4 max-w-sm mx-auto leading-relaxed">
+            Este precio incluye materiales, mano de obra y disposición de
+            escombros necesarios para completar los trabajos descritos en esta
+            propuesta, excluyendo los materiales especificados como provistos
+            por el propietario.
+          </p>
+        </div>
 
-          <div>
-            <p className="text-sm text-slate-500 mb-6 font-medium">
-              Al firmar este documento, ambas partes acuerdan los trabajos y la
-              inversión descritos anteriormente.
+        {/* SECCIÓN 5: CONDICIONES */}
+        <SectionHeader num={5} title="Condiciones Generales" />
+        <ul className="space-y-2 mb-4">
+          {DEFAULT_CONDITIONS.map((cond, i) => (
+            <li
+              key={i}
+              className="flex items-start gap-2 text-sm text-gray-700"
+            >
+              <span className="mt-0.5 text-gray-500 shrink-0">•</span>
+              <span>{cond}</span>
+            </li>
+          ))}
+        </ul>
+        {quote.notes ? (
+          <div className="bg-amber-50 border-l-4 border-amber-300 rounded px-4 py-3 mb-4">
+            <p className="text-xs text-amber-900 leading-relaxed">
+              {quote.notes}
             </p>
-            <div className="grid grid-cols-2 gap-8">
-              <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-                <div className="bg-slate-50 border-b border-slate-200 px-4 py-2.5">
-                  <p className="text-[10px] font-bold tracking-widest text-slate-500 uppercase">
-                    Contratista
-                  </p>
-                </div>
-                <div className="p-5 pt-16">
-                  <div className="border-b border-slate-300 mb-3" />
-                  <p className="text-xs font-medium text-slate-600">
-                    {quote.organization.name}
-                  </p>
-                </div>
-              </div>
-              <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-                <div className="bg-slate-50 border-b border-slate-200 px-4 py-2.5">
-                  <p className="text-[10px] font-bold tracking-widest text-slate-500 uppercase">
-                    Cliente
-                  </p>
-                </div>
-                <div className="p-5 pt-16">
-                  <div className="border-b border-slate-300 mb-3" />
-                  <p className="text-xs font-medium text-slate-600">
-                    {quote.client.name}
-                  </p>
-                </div>
-              </div>
-            </div>
+          </div>
+        ) : null}
+
+        {/* SECCIÓN 6: ACEPTACIÓN */}
+        <SectionHeader num={6} title="Aceptación de la Propuesta" />
+        <p className="text-sm text-gray-600 mb-10 leading-relaxed">
+          Al firmar este documento, ambas partes están de acuerdo con el alcance
+          del trabajo, el costo y las condiciones estipuladas.
+        </p>
+        <div className="grid grid-cols-2 gap-8">
+          <div>
+            <div className="h-14 border-b border-gray-400 mb-2" />
+            <p className="text-sm font-bold text-gray-700">Firma del Cliente</p>
+            <p className="text-xs text-gray-400">Nombre: {quote.client.name}</p>
+          </div>
+          <div>
+            <div className="h-14 border-b border-gray-400 mb-2" />
+            <p className="text-sm font-bold text-gray-700">
+              {quote.organization.name}
+            </p>
+            {license || phone ? (
+              <p className="text-xs text-gray-400">
+                {[
+                  license ? `Lic. ${license}` : null,
+                  phone ? `Tel. ${phone}` : null,
+                ]
+                  .filter(Boolean)
+                  .join(" | ")}
+              </p>
+            ) : null}
           </div>
         </div>
       </div>

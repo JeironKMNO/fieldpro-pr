@@ -30,6 +30,8 @@ import {
   Navigation,
   ExternalLink,
   AlertTriangle,
+  Link2,
+  Check,
 } from "lucide-react";
 import { ClientNotes } from "./client-notes";
 import { ClientTags } from "./client-tags";
@@ -73,6 +75,7 @@ interface ClientData {
   phone: string | null;
   type: string;
   status: string;
+  portalToken: string;
   addresses: Address[];
   notes: Note[];
   tags: TagRelation[];
@@ -82,6 +85,15 @@ export function ClientDetail({ client }: { client: ClientData }) {
   const router = useRouter();
   const primaryAddress = client.addresses.find((a) => a.isPrimary);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [portalCopied, setPortalCopied] = useState(false);
+
+  function copyPortalLink() {
+    const url = `${window.location.origin}/portal/${client.portalToken}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setPortalCopied(true);
+      setTimeout(() => setPortalCopied(false), 2000);
+    });
+  }
 
   const archiveClient = trpc.clients.archive.useMutation({
     onSuccess: () => {
@@ -126,6 +138,19 @@ export function ClientDetail({ client }: { client: ClientData }) {
           </div>
         </div>
         <div className="flex flex-wrap gap-2 sm:shrink-0">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={copyPortalLink}
+            title="Copiar link del portal del cliente"
+          >
+            {portalCopied ? (
+              <Check className="mr-2 h-4 w-4 text-green-500" />
+            ) : (
+              <Link2 className="mr-2 h-4 w-4" />
+            )}
+            {portalCopied ? "¡Copiado!" : "Portal"}
+          </Button>
           <Link href={`/clients/${client.id}/edit`}>
             <Button variant="outline" size="sm">
               <Edit className="mr-2 h-4 w-4" />

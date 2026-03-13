@@ -9,517 +9,330 @@ import {
   StyleSheet,
 } from "@react-pdf/renderer";
 
-// ─── Design system ────────────────────────────────────────────────
-// Headings: #111827  Body: #374151  Meta: #6b7280  Muted: #9ca3af
-// Borders:  #e5e7eb  Table header bg: #f3f4f6  Alt row: #f9fafb
-// Accent:   #10b981 (emerald)  Dark header: #0f172a
-// ─────────────────────────────────────────────────────────────────
+// ─── Design tokens ─────────────────────────────────────────────────
+const NAVY = "#1B2661";
+const GOLD = "#C9962B";
+const BLUE_BG = "#EBF2FD";
+const BODY = "#374151";
+const GRAY_MID = "#6B7280";
+const SEPARATOR = "#D1D5DB";
+const WATERMARK = "#EBEBEB";
+const BLUE_NOTE_BG = "#EBF5FB";
+const BLUE_NOTE_TEXT = "#1D4ED8";
+// ────────────────────────────────────────────────────────────────────
 
-const PAGE_PADDING = 40;
+const H_PAD = 50;
 
 const styles = StyleSheet.create({
   page: {
-    paddingHorizontal: PAGE_PADDING,
-    paddingTop: 28,
-    paddingBottom: 52,
+    paddingHorizontal: H_PAD,
+    paddingTop: 36,
+    paddingBottom: 56,
     fontSize: 10,
     fontFamily: "Helvetica",
-    color: "#374151",
+    color: BODY,
+    backgroundColor: "#FFFFFF",
   },
 
   // ── Header ──
-  headerBackground: {
-    backgroundColor: "#0f172a",
-    marginHorizontal: -PAGE_PADDING,
-    marginTop: -28,
-    paddingTop: 36,
-    paddingBottom: 24,
-    paddingHorizontal: PAGE_PADDING,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-  },
-  accentStripe: {
-    backgroundColor: "#10b981",
-    height: 4,
-    marginHorizontal: -PAGE_PADDING,
-    marginBottom: 24,
-  },
-  headerLeft: {
+  header: {
     flexDirection: "row",
     alignItems: "flex-start",
-    gap: 12,
+    gap: 14,
+    marginBottom: 6,
   },
   logo: {
-    width: 44,
-    height: 44,
+    width: 60,
+    height: 60,
     objectFit: "contain",
   },
+  companyInfo: {
+    flexDirection: "column",
+  },
   companyName: {
-    fontSize: 18,
+    fontSize: 22,
     fontFamily: "Helvetica-Bold",
-    color: "#ffffff",
-  },
-  companyTagline: {
-    fontSize: 8,
-    color: "#94a3b8",
-    marginTop: 3,
-  },
-  companyDetail: {
-    fontSize: 9,
-    color: "#94a3b8",
-    marginTop: 2,
-  },
-  headerRight: {
-    alignItems: "flex-end",
-  },
-  cotizacionLabel: {
-    fontSize: 7,
-    fontFamily: "Helvetica-Bold",
-    color: "#34d399",
-    textTransform: "uppercase",
-    letterSpacing: 2,
-    marginBottom: 4,
-  },
-  quoteNumber: {
-    fontSize: 18,
-    fontFamily: "Helvetica-Bold",
-    color: "#ffffff",
-  },
-  dateText: {
-    fontSize: 9,
-    color: "#94a3b8",
-    marginTop: 4,
-  },
-
-  // ── Client + Project Info Block ──
-  infoBlock: {
-    flexDirection: "row",
-    gap: 12,
-    marginBottom: 20,
-  },
-  infoCard: {
-    flex: 1,
-    backgroundColor: "#f8fafc",
-    padding: 12,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-  },
-  infoCardLabel: {
-    fontSize: 7,
-    fontFamily: "Helvetica-Bold",
-    color: "#64748b",
-    textTransform: "uppercase",
-    letterSpacing: 1.2,
-    marginBottom: 6,
-  },
-  infoCardName: {
-    fontSize: 12,
-    fontFamily: "Helvetica-Bold",
-    color: "#0f172a",
+    color: NAVY,
+    letterSpacing: 0.3,
     marginBottom: 3,
   },
-  infoCardText: {
-    fontSize: 9,
-    color: "#475569",
-    marginTop: 2,
-    lineHeight: 1.4,
-  },
-
-  // ── Project Description Block ──
-  descriptionBlock: {
-    marginBottom: 20,
-    padding: 14,
-    backgroundColor: "#f0fdf4",
-    borderRadius: 6,
-    borderLeftWidth: 3,
-    borderLeftColor: "#10b981",
-    borderWidth: 1,
-    borderColor: "#d1fae5",
-  },
-  descriptionLabel: {
+  companyTagline: {
     fontSize: 7,
-    fontFamily: "Helvetica-Bold",
-    color: "#065f46",
-    textTransform: "uppercase",
-    letterSpacing: 1.2,
-    marginBottom: 6,
+    color: "#9CA3AF",
+    letterSpacing: 2,
+    marginBottom: 3,
   },
-  descriptionTitle: {
-    fontSize: 13,
-    fontFamily: "Helvetica-Bold",
-    color: "#0f172a",
-    marginBottom: 6,
+  companyDetailRow: {
+    flexDirection: "row",
+    gap: 0,
+    marginTop: 1,
   },
-  descriptionText: {
-    fontSize: 9,
-    color: "#374151",
-    lineHeight: 1.5,
+  companyDetailLabel: {
+    fontSize: 8.5,
+    fontFamily: "Helvetica-Bold",
+    color: GRAY_MID,
+  },
+  companyDetailValue: {
+    fontSize: 8.5,
+    color: GRAY_MID,
   },
 
-  // ── Section Divider Label ──
-  sectionDivider: {
-    marginBottom: 12,
+  // ── Watermark ──
+  watermarkWrap: {
+    alignItems: "center",
     marginTop: 4,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
+    marginBottom: 2,
   },
-  sectionDividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: "#e2e8f0",
-  },
-  sectionDividerText: {
-    fontSize: 7,
+  watermark: {
+    fontSize: 54,
     fontFamily: "Helvetica-Bold",
-    color: "#64748b",
-    textTransform: "uppercase",
-    letterSpacing: 1.5,
+    color: WATERMARK,
+    letterSpacing: 16,
   },
 
-  // ── Scope Sections ──
-  sectionContainer: {
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-    borderRadius: 6,
-    overflow: "hidden",
+  // ── Separator ──
+  separator: {
+    height: 1,
+    backgroundColor: SEPARATOR,
+    marginVertical: 10,
   },
-  sectionHeader: {
-    backgroundColor: "#0f172a",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+
+  // ── Info box ──
+  infoBox: {
+    backgroundColor: BLUE_BG,
+    borderRadius: 5,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginBottom: 22,
+  },
+  infoRow: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
+    marginBottom: 4,
   },
-  sectionNumberCircle: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: "#10b981",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  sectionNumberText: {
-    fontSize: 8,
+  infoLabel: {
+    fontSize: 9.5,
     fontFamily: "Helvetica-Bold",
-    color: "#ffffff",
+    color: NAVY,
+    width: 70,
+  },
+  infoValue: {
+    fontSize: 9.5,
+    color: NAVY,
+    flex: 1,
+    lineHeight: 1.3,
+  },
+
+  // ── Numbered section header ──
+  sectionRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+    marginTop: 18,
+    marginBottom: 8,
+  },
+  sectionNum: {
+    fontSize: 16,
+    fontFamily: "Helvetica-Bold",
+    color: GOLD,
+    width: 16,
+    lineHeight: 1,
   },
   sectionTitle: {
-    fontSize: 10,
+    fontSize: 14,
     fontFamily: "Helvetica-Bold",
-    color: "#ffffff",
-    textTransform: "uppercase",
-    letterSpacing: 0.8,
+    color: NAVY,
     flex: 1,
+    lineHeight: 1.2,
   },
-  sectionSubtotalText: {
-    fontSize: 9,
+
+  // ── Subsection (2.1, 2.2…) ──
+  subsectionTitle: {
+    fontSize: 11,
     fontFamily: "Helvetica-Bold",
-    color: "#34d399",
-  },
-  itemsLabel: {
-    fontSize: 7,
-    fontFamily: "Helvetica-Bold",
-    color: "#64748b",
-    textTransform: "uppercase",
-    letterSpacing: 1,
-    paddingHorizontal: 12,
-    paddingTop: 10,
-    paddingBottom: 4,
-    backgroundColor: "#f8fafc",
+    color: BODY,
+    marginTop: 12,
+    marginBottom: 6,
+    paddingBottom: 5,
     borderBottomWidth: 1,
-    borderBottomColor: "#e2e8f0",
+    borderBottomColor: SEPARATOR,
   },
-  tableRowEven: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    backgroundColor: "#ffffff",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-  },
-  tableRowOdd: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    backgroundColor: "#f8fafc",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderTopWidth: 1,
-    borderTopColor: "#f1f5f9",
-  },
-  bulletPoint: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: "#10b981",
-    marginTop: 4,
-    marginRight: 8,
-    flexShrink: 0,
-  },
-  itemDescription: {
+
+  // ── Body text ──
+  bodyText: {
     fontSize: 9.5,
-    color: "#1e293b",
+    color: BODY,
+    lineHeight: 1.5,
+    marginBottom: 8,
+  },
+
+  // ── Bullets ──
+  bulletRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 4,
+    gap: 6,
+  },
+  bulletDot: {
+    fontSize: 9.5,
+    color: BODY,
+    width: 10,
+    lineHeight: 1.45,
+  },
+  bulletText: {
+    fontSize: 9.5,
+    color: BODY,
     lineHeight: 1.45,
     flex: 1,
   },
-  dimText: {
-    fontSize: 8,
-    color: "#94a3b8",
-    marginTop: 2,
-    marginLeft: 12,
-  },
-
-  // ── Included Materials Block ──
-  includedBlock: {
-    marginBottom: 16,
-    padding: 12,
-    backgroundColor: "#f8fafc",
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-  },
-  includedLabel: {
-    fontSize: 7,
+  bulletTextBold: {
+    fontSize: 9.5,
     fontFamily: "Helvetica-Bold",
-    color: "#64748b",
-    textTransform: "uppercase",
-    letterSpacing: 1,
-    marginBottom: 8,
-  },
-  includedRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 4,
-  },
-  checkMark: {
-    fontSize: 8,
-    color: "#10b981",
-    marginRight: 6,
-    marginTop: 1,
-  },
-  includedText: {
-    fontSize: 9,
-    color: "#374151",
-    lineHeight: 1.4,
+    color: BODY,
+    lineHeight: 1.45,
     flex: 1,
   },
 
-  // ── Totals ──
-  totalsContainer: {
-    marginTop: 20,
-    alignItems: "flex-end",
+  // ── Blue italic note box ──
+  blueNote: {
+    backgroundColor: BLUE_NOTE_BG,
+    borderLeftWidth: 3,
+    borderLeftColor: "#3B82F6",
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    marginTop: 8,
+    marginBottom: 4,
+    borderRadius: 2,
   },
-  totalsBox: {
-    width: 240,
-    borderWidth: 2,
-    borderColor: "#10b981",
-    borderRadius: 6,
-    overflow: "hidden",
+  blueNoteText: {
+    fontSize: 8.5,
+    color: BLUE_NOTE_TEXT,
+    fontFamily: "Helvetica-Oblique",
+    lineHeight: 1.4,
   },
-  totalsHeader: {
-    backgroundColor: "#10b981",
-    paddingVertical: 7,
+
+  // ── Amber note box ──
+  amberNote: {
+    backgroundColor: "#FFFBEB",
+    borderRadius: 3,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  amberNoteText: {
+    fontSize: 8.5,
+    color: "#92400E",
+    lineHeight: 1.4,
+  },
+
+  // ── Section 4: Investment card ──
+  investmentCard: {
+    backgroundColor: NAVY,
+    borderRadius: 8,
+    paddingVertical: 28,
+    paddingHorizontal: 20,
+    marginTop: 18,
+    marginBottom: 6,
     alignItems: "center",
   },
-  totalsHeaderText: {
-    fontSize: 8,
+  investmentTitle: {
+    fontSize: 13,
     fontFamily: "Helvetica-Bold",
-    color: "#ffffff",
-    textTransform: "uppercase",
-    letterSpacing: 1.5,
-  },
-  totalsRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 14,
-    paddingVertical: 5,
-    borderBottomWidth: 1,
-    borderBottomColor: "#d1fae5",
-  },
-  totalsLabel: {
-    fontSize: 9,
-    color: "#6b7280",
-  },
-  totalsValue: {
-    fontSize: 9,
-    color: "#1e293b",
-    fontFamily: "Helvetica-Bold",
-  },
-  totalsFinalRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 14,
-    paddingTop: 10,
-    paddingBottom: 12,
-    backgroundColor: "#ecfdf5",
-  },
-  totalsFinalLabel: {
-    fontSize: 11,
-    fontFamily: "Helvetica-Bold",
-    color: "#065f46",
-  },
-  totalsFinalValue: {
-    fontSize: 18,
-    fontFamily: "Helvetica-Bold",
-    color: "#047857",
-  },
-
-  // ── Conditions ──
-  conditionsBlock: {
-    marginTop: 20,
-    marginBottom: 16,
-    padding: 12,
-    backgroundColor: "#fffbeb",
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: "#fde68a",
-  },
-  conditionsLabel: {
-    fontSize: 7,
-    fontFamily: "Helvetica-Bold",
-    color: "#92400e",
-    textTransform: "uppercase",
+    color: GOLD,
     letterSpacing: 1,
+    marginBottom: 10,
+  },
+  investmentSubtitle: {
+    fontSize: 8,
+    color: "#CBD5E1",
+    letterSpacing: 1.5,
     marginBottom: 8,
   },
-  conditionRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 4,
+  investmentPrice: {
+    fontSize: 40,
+    fontFamily: "Helvetica-Bold",
+    color: "#FFFFFF",
   },
-  conditionNumber: {
+  investmentNote: {
     fontSize: 8,
-    fontFamily: "Helvetica-Bold",
-    color: "#d97706",
-    marginRight: 6,
-    width: 12,
+    color: "#94A3B8",
+    textAlign: "center",
+    marginTop: 12,
+    lineHeight: 1.45,
+    maxWidth: 300,
   },
-  conditionText: {
+  investmentBreakdown: {
+    marginTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: "#2D3E8A",
+    paddingTop: 10,
+    alignItems: "center",
+  },
+  breakdownRow: {
+    flexDirection: "row",
+    width: 200,
+    justifyContent: "space-between",
+    marginBottom: 3,
+  },
+  breakdownLabel: {
     fontSize: 8.5,
-    color: "#374151",
-    lineHeight: 1.4,
-    flex: 1,
+    color: "#94A3B8",
   },
-
-  // ── Terms ──
-  termsBlock: {
-    marginBottom: 16,
-    padding: 12,
-    backgroundColor: "#f8fafc",
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-  },
-  termsLabel: {
-    fontSize: 7,
-    fontFamily: "Helvetica-Bold",
-    color: "#64748b",
-    textTransform: "uppercase",
-    letterSpacing: 1,
-    marginBottom: 6,
-  },
-  termsText: {
-    fontSize: 9,
-    color: "#475569",
-    lineHeight: 1.5,
+  breakdownValue: {
+    fontSize: 8.5,
+    color: "#CBD5E1",
   },
 
   // ── Signatures ──
-  signaturesContainer: {
-    marginTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: "#e2e8f0",
-    paddingTop: 16,
-  },
-  agreementText: {
+  sigNote: {
     fontSize: 9,
-    color: "#6b7280",
-    marginBottom: 14,
-    textAlign: "center",
+    color: GRAY_MID,
+    marginBottom: 16,
+    lineHeight: 1.4,
   },
-  signatureBoxes: {
+  sigBoxes: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 20,
+    gap: 24,
   },
   sigBox: {
     flex: 1,
-    borderWidth: 1,
-    borderColor: "#cbd5e1",
-    borderRadius: 6,
-    overflow: "hidden",
-  },
-  sigBoxHeader: {
-    backgroundColor: "#0f172a",
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-  },
-  sigBoxHeaderText: {
-    fontSize: 7,
-    fontFamily: "Helvetica-Bold",
-    color: "#94a3b8",
-    textTransform: "uppercase",
-    letterSpacing: 1,
-  },
-  sigBody: {
-    padding: 12,
-  },
-  sigSpaceTop: {
-    height: 36,
   },
   sigLine: {
     borderBottomWidth: 1,
-    borderBottomColor: "#94a3b8",
+    borderBottomColor: "#9CA3AF",
     marginBottom: 6,
+    height: 40,
   },
-  sigFieldRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 8,
-  },
-  sigFieldLabel: {
-    fontSize: 8,
-    color: "#9ca3af",
-    width: 48,
-  },
-  sigFieldLine: {
-    flex: 1,
-    borderBottomWidth: 0.5,
-    borderBottomColor: "#cbd5e1",
-    marginLeft: 4,
-  },
-  sigName: {
-    fontSize: 8,
+  sigBoxLabel: {
+    fontSize: 9,
     fontFamily: "Helvetica-Bold",
-    color: "#475569",
+    color: BODY,
+    marginBottom: 2,
   },
-  sigSubtext: {
-    fontSize: 7,
-    color: "#94a3b8",
-    marginTop: 2,
+  sigBoxSub: {
+    fontSize: 8,
+    color: "#9CA3AF",
   },
 
   // ── Footer ──
   footer: {
     position: "absolute",
-    bottom: 16,
-    left: PAGE_PADDING,
-    right: PAGE_PADDING,
+    bottom: 18,
+    left: H_PAD,
+    right: H_PAD,
     flexDirection: "row",
     justifyContent: "space-between",
     borderTopWidth: 0.5,
-    borderTopColor: "#e5e7eb",
+    borderTopColor: "#E5E7EB",
     paddingTop: 5,
   },
   footerText: {
     fontSize: 7,
-    color: "#9ca3af",
+    color: "#9CA3AF",
   },
 });
 
+// ─── Helpers ────────────────────────────────────────────────────────
 function fmt(value: unknown): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -535,6 +348,36 @@ function fmtDate(date: Date | string): string {
   });
 }
 
+function SectionHeader({ num, title }: { num: string; title: string }) {
+  return (
+    <View style={styles.sectionRow}>
+      <Text style={styles.sectionNum}>{num}</Text>
+      <Text style={styles.sectionTitle}>{title}</Text>
+    </View>
+  );
+}
+
+// ─── Constants ──────────────────────────────────────────────────────
+const DEFAULT_CONDITIONS = [
+  "Cualquier trabajo adicional no especificado en esta propuesta será considerado trabajo extra y requerirá una orden de cambio aprobada y firmada por el cliente.",
+  "El tiempo estimado de ejecución podrá variar dependiendo de condiciones imprevistas del proyecto o factores fuera del control del contratista.",
+  "Cambios solicitados por el cliente durante la ejecución del proyecto podrían afectar el costo final y el tiempo de entrega.",
+  "Esta cotización tiene validez de 30 días a partir de la fecha de emisión, sujeta a disponibilidad de materiales y mano de obra.",
+];
+
+const INCLUDED_SERVICES: { text: string; bold?: boolean }[] = [
+  {
+    text: "Los materiales necesarios para la ejecución del proyecto (excepto los provistos por el cliente).",
+  },
+  { text: "Mano de obra especializada." },
+  { text: "Herramientas y equipo necesario." },
+  {
+    text: "Disposición de escombros generados durante el proyecto.",
+    bold: true,
+  },
+];
+
+// ─── Public interface ────────────────────────────────────────────────
 export interface PdfQuote {
   quoteNumber: string;
   title: string | null;
@@ -579,161 +422,109 @@ export interface PdfQuote {
   }[];
 }
 
-const DEFAULT_CONDITIONS = [
-  "Cualquier trabajo adicional no especificado en esta propuesta será considerado trabajo extra y requerirá una orden de cambio aprobada y firmada por el cliente.",
-  "El tiempo estimado de ejecución podrá variar dependiendo de condiciones imprevistas del proyecto o factores fuera del control del contratista.",
-  "Cambios solicitados por el cliente durante la ejecución del proyecto podrían afectar el costo final y el tiempo de entrega.",
-  "Esta cotización tiene validez de 30 días a partir de la fecha de emisión, sujeta a disponibilidad de materiales y mano de obra.",
-];
-
-const INCLUDED_SERVICES = [
-  "Materiales necesarios para la ejecución del proyecto (excepto los especificados como provistos por el propietario)",
-  "Mano de obra especializada y supervisión técnica",
-  "Herramientas y equipo necesario para la ejecución",
-  "Disposición y transporte de escombros generados durante el proyecto",
-];
-
+// ─── Component ───────────────────────────────────────────────────────
 export function QuotePdfDocument({ quote }: { quote: PdfQuote }) {
   const address = quote.client.addresses[0];
   const { logoUrl, phone, license } = quote.organization;
   const taxRate = Number(quote.taxRate);
   const taxAmount = Number(quote.taxAmount);
   const subtotal = Number(quote.subtotal);
+  const hasTax = taxAmount > 0 && subtotal > 0;
+
+  const categoryList = quote.sections
+    .map((s) => s.category.name.toLowerCase())
+    .join(", ");
+
+  const projectDesc = `El presente documento describe los trabajos de ${categoryList} a realizar en la propiedad${address ? ` ubicada en ${address.city}` : " del cliente"}. Los trabajos incluyen ${categoryList}. Todos los trabajos serán ejecutados por personal especializado siguiendo los estándares de construcción aplicables en Puerto Rico.`;
 
   return (
     <Document>
       <Page size="LETTER" style={styles.page}>
-        {/* ── Header ── */}
-        <View style={styles.headerBackground} fixed>
-          <View style={styles.headerLeft}>
-            {/* eslint-disable-next-line jsx-a11y/alt-text */}
-            {logoUrl ? <Image src={logoUrl} style={styles.logo} /> : null}
-            <View>
-              <Text style={styles.companyName}>{quote.organization.name}</Text>
-              <Text style={styles.companyTagline}>
-                Servicios de Construcción y Remodelación
-              </Text>
-              {phone ? (
-                <Text style={styles.companyDetail}>Tel. {phone}</Text>
-              ) : null}
-              {license ? (
-                <Text style={styles.companyDetail}>Licencia: {license}</Text>
-              ) : null}
-            </View>
-          </View>
-          <View style={styles.headerRight}>
-            <Text style={styles.cotizacionLabel}>Cotización de Servicios</Text>
-            <Text style={styles.quoteNumber}>{quote.quoteNumber}</Text>
-            {quote.title ? (
-              <Text style={{ fontSize: 9, color: "#cbd5e1", marginTop: 4 }}>
-                {quote.title}
-              </Text>
-            ) : null}
-            <Text style={styles.dateText}>
-              Fecha: {fmtDate(quote.createdAt)}
+        {/* ── HEADER ── */}
+        <View style={styles.header} fixed>
+          {/* eslint-disable-next-line jsx-a11y/alt-text */}
+          {logoUrl ? <Image src={logoUrl} style={styles.logo} /> : null}
+          <View style={styles.companyInfo}>
+            <Text style={styles.companyName}>{quote.organization.name}</Text>
+            <Text style={styles.companyTagline}>
+              SERVICIOS DE CONSTRUCCIÓN Y REMODELACIÓN
             </Text>
-            {quote.validUntil ? (
-              <Text style={styles.dateText}>
-                Válida hasta: {fmtDate(quote.validUntil)}
-              </Text>
-            ) : null}
-          </View>
-        </View>
-        <View style={styles.accentStripe} fixed />
-
-        {/* ── Client + Project Info ── */}
-        <View style={styles.infoBlock}>
-          <View style={styles.infoCard}>
-            <Text style={styles.infoCardLabel}>Cliente</Text>
-            <Text style={styles.infoCardName}>{quote.client.name}</Text>
-            {quote.client.email ? (
-              <Text style={styles.infoCardText}>{quote.client.email}</Text>
-            ) : null}
-            {quote.client.phone ? (
-              <Text style={styles.infoCardText}>{quote.client.phone}</Text>
-            ) : null}
-          </View>
-          <View style={styles.infoCard}>
-            <Text style={styles.infoCardLabel}>Dirección del Proyecto</Text>
-            {address ? (
-              <>
-                <Text style={styles.infoCardText}>{address.street}</Text>
-                <Text style={styles.infoCardText}>
-                  {address.city}, {address.state} {address.zipCode}
-                </Text>
-              </>
-            ) : (
-              <Text style={styles.infoCardText}>—</Text>
-            )}
-          </View>
-          <View style={styles.infoCard}>
-            <Text style={styles.infoCardLabel}>Detalles</Text>
-            <Text style={styles.infoCardText}>
-              Fecha de emisión:{"\n"}
-              {fmtDate(quote.createdAt)}
-            </Text>
-            {quote.validUntil ? (
-              <Text style={[styles.infoCardText, { marginTop: 6 }]}>
-                Válida hasta:{"\n"}
-                {fmtDate(quote.validUntil)}
-              </Text>
-            ) : null}
-          </View>
-        </View>
-
-        {/* ── Project Description ── */}
-        {quote.title ? (
-          <View style={styles.descriptionBlock}>
-            <Text style={styles.descriptionLabel}>
-              Descripción del Proyecto
-            </Text>
-            <Text style={styles.descriptionTitle}>{quote.title}</Text>
-            <Text style={styles.descriptionText}>
-              El presente documento describe los trabajos de construcción y
-              remodelación a realizar en la propiedad del cliente. Los trabajos
-              incluyen{" "}
-              {quote.sections
-                .map((s) => s.category.name.toLowerCase())
-                .join(", ")}
-              {". "}
-              Todos los trabajos serán ejecutados por personal especializado
-              siguiendo los estándares de construcción aplicables en Puerto
-              Rico.
-            </Text>
-          </View>
-        ) : null}
-
-        {/* ── Scope Divider ── */}
-        <View style={styles.sectionDivider}>
-          <View style={styles.sectionDividerLine} />
-          <Text style={styles.sectionDividerText}>Alcance de los Trabajos</Text>
-          <View style={styles.sectionDividerLine} />
-        </View>
-
-        {/* ── Work Sections ── */}
-        {quote.sections.map((section, sectionIndex) => (
-          <View key={section.id} style={styles.sectionContainer} wrap={false}>
-            <View style={styles.sectionHeader}>
-              <View style={styles.sectionNumberCircle}>
-                <Text style={styles.sectionNumberText}>{sectionIndex + 1}</Text>
+            {license ? (
+              <View style={styles.companyDetailRow}>
+                <Text style={styles.companyDetailLabel}>Licencia: </Text>
+                <Text style={styles.companyDetailValue}>{license}</Text>
               </View>
-              <Text style={styles.sectionTitle}>{section.category.name}</Text>
+            ) : null}
+            {phone ? (
+              <View style={styles.companyDetailRow}>
+                <Text style={styles.companyDetailLabel}>Teléfono: </Text>
+                <Text style={styles.companyDetailValue}>{phone}</Text>
+              </View>
+            ) : null}
+          </View>
+        </View>
+
+        {/* ── WATERMARK ── */}
+        <View style={styles.watermarkWrap}>
+          <Text style={styles.watermark}>COTIZACIÓN</Text>
+        </View>
+
+        {/* ── SEPARATOR ── */}
+        <View style={styles.separator} />
+
+        {/* ── INFO BOX ── */}
+        <View style={styles.infoBox}>
+          {quote.title ? (
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Proyecto:</Text>
+              <Text style={styles.infoValue}>{quote.title}</Text>
             </View>
+          ) : null}
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Fecha:</Text>
+            <Text style={styles.infoValue}>{fmtDate(quote.createdAt)}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Cliente:</Text>
+            <Text style={styles.infoValue}>{quote.client.name}</Text>
+          </View>
+          {address ? (
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Dirección:</Text>
+              <Text style={styles.infoValue}>
+                {address.street}, {address.city}, {address.state}
+              </Text>
+            </View>
+          ) : null}
+        </View>
 
-            <Text style={styles.itemsLabel}>Trabajos incluidos:</Text>
+        {/* ── SECCIÓN 1: DESCRIPCIÓN ── */}
+        <SectionHeader num="1" title="Descripción del Proyecto" />
+        <Text style={styles.bodyText}>{projectDesc}</Text>
 
-            {section.items.map((item, rowIndex) => (
-              <View
-                key={item.id}
-                style={
-                  rowIndex % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd
-                }
-              >
-                <View style={styles.bulletPoint} />
+        {/* ── SECCIÓN 2: ALCANCE ── */}
+        <SectionHeader num="2" title="Alcance de los Trabajos" />
+        {quote.sections.map((section, idx) => (
+          <View key={section.id} wrap={false}>
+            <Text style={styles.subsectionTitle}>
+              2.{idx + 1} {section.category.name}
+            </Text>
+            <Text style={[styles.bodyText, { marginBottom: 4 }]}>
+              Trabajos incluidos:
+            </Text>
+            {section.items.map((item) => (
+              <View key={item.id} style={styles.bulletRow}>
+                <Text style={styles.bulletDot}>•</Text>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.itemDescription}>{item.description}</Text>
+                  <Text style={styles.bulletText}>{item.description}</Text>
                   {Number(item.length) > 0 && Number(item.width) > 0 ? (
-                    <Text style={styles.dimText}>
+                    <Text
+                      style={{
+                        fontSize: 8,
+                        color: "#9CA3AF",
+                        marginTop: 1,
+                      }}
+                    >
                       Dimensiones: {Number(item.length)} × {Number(item.width)}{" "}
                       ft
                     </Text>
@@ -744,138 +535,99 @@ export function QuotePdfDocument({ quote }: { quote: PdfQuote }) {
           </View>
         ))}
 
-        {/* ── Materials & Services Included ── */}
-        <View style={styles.sectionDivider}>
-          <View style={styles.sectionDividerLine} />
-          <Text style={styles.sectionDividerText}>
-            Materiales y Servicios Incluidos
-          </Text>
-          <View style={styles.sectionDividerLine} />
-        </View>
-
-        <View style={styles.includedBlock} wrap={false}>
-          <Text style={styles.includedLabel}>
-            El contratista será responsable de proveer:
-          </Text>
-          {INCLUDED_SERVICES.map((item, i) => (
-            <View key={i} style={styles.includedRow}>
-              <Text style={styles.checkMark}>✓</Text>
-              <Text style={styles.includedText}>{item}</Text>
-            </View>
-          ))}
-        </View>
-
-        {/* ── Totals ── */}
-        <View style={styles.totalsContainer} wrap={false}>
-          <View style={styles.totalsBox}>
-            <View style={styles.totalsHeader}>
-              <Text style={styles.totalsHeaderText}>
-                Inversión del Proyecto
-              </Text>
-            </View>
-            {subtotal > 0 && taxAmount > 0 ? (
-              <>
-                <View style={styles.totalsRow}>
-                  <Text style={styles.totalsLabel}>Subtotal</Text>
-                  <Text style={styles.totalsValue}>{fmt(subtotal)}</Text>
-                </View>
-                <View style={styles.totalsRow}>
-                  <Text style={styles.totalsLabel}>
-                    IVU ({(taxRate * 100).toFixed(1)}%)
-                  </Text>
-                  <Text style={styles.totalsValue}>{fmt(taxAmount)}</Text>
-                </View>
-              </>
-            ) : null}
-            <View style={styles.totalsFinalRow}>
-              <Text style={styles.totalsFinalLabel}>COSTO TOTAL</Text>
-              <Text style={styles.totalsFinalValue}>{fmt(quote.total)}</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* ── General Conditions ── */}
-        <View style={styles.conditionsBlock} wrap={false}>
-          <Text style={styles.conditionsLabel}>Condiciones Generales</Text>
-          {DEFAULT_CONDITIONS.map((condition, i) => (
-            <View key={i} style={styles.conditionRow}>
-              <Text style={styles.conditionNumber}>{i + 1}.</Text>
-              <Text style={styles.conditionText}>{condition}</Text>
-            </View>
-          ))}
-        </View>
-
-        {/* ── Terms / Notes ── */}
-        {quote.notes ? (
-          <View style={styles.termsBlock} wrap={false}>
-            <Text style={styles.termsLabel}>
-              Notas y Condiciones Adicionales
+        {/* ── SECCIÓN 3: MATERIALES ── */}
+        <SectionHeader num="3" title="Materiales y Servicios Incluidos" />
+        <Text style={styles.bodyText}>
+          El contratista será responsable de proveer:
+        </Text>
+        {INCLUDED_SERVICES.map((s, i) => (
+          <View key={i} style={styles.bulletRow}>
+            <Text style={styles.bulletDot}>•</Text>
+            <Text style={s.bold ? styles.bulletTextBold : styles.bulletText}>
+              {s.text}
             </Text>
-            <Text style={styles.termsText}>{quote.notes}</Text>
+          </View>
+        ))}
+
+        {/* ── SECCIÓN 4: INVERSIÓN ── */}
+        <View style={styles.investmentCard} wrap={false}>
+          <Text style={styles.investmentTitle}>4. INVERSIÓN DEL PROYECTO</Text>
+          <Text style={styles.investmentSubtitle}>
+            COSTO TOTAL DEL PROYECTO
+          </Text>
+          <Text style={styles.investmentPrice}>{fmt(quote.total)}</Text>
+          {hasTax ? (
+            <View style={styles.investmentBreakdown}>
+              <View style={styles.breakdownRow}>
+                <Text style={styles.breakdownLabel}>Subtotal</Text>
+                <Text style={styles.breakdownValue}>{fmt(subtotal)}</Text>
+              </View>
+              <View style={styles.breakdownRow}>
+                <Text style={styles.breakdownLabel}>
+                  IVU ({(taxRate * 100).toFixed(1)}%)
+                </Text>
+                <Text style={styles.breakdownValue}>{fmt(taxAmount)}</Text>
+              </View>
+            </View>
+          ) : null}
+          <Text style={styles.investmentNote}>
+            Este precio incluye materiales, mano de obra y disposición de
+            escombros necesarios para completar los trabajos descritos en esta
+            propuesta, excluyendo los materiales especificados como provistos
+            por el propietario.
+          </Text>
+        </View>
+
+        {/* ── SECCIÓN 5: CONDICIONES ── */}
+        <SectionHeader num="5" title="Condiciones Generales" />
+        {DEFAULT_CONDITIONS.map((cond, i) => (
+          <View key={i} style={styles.bulletRow}>
+            <Text style={styles.bulletDot}>•</Text>
+            <Text style={styles.bulletText}>{cond}</Text>
+          </View>
+        ))}
+        {quote.notes ? (
+          <View style={[styles.amberNote, { marginTop: 12 }]}>
+            <Text style={styles.amberNoteText}>{quote.notes}</Text>
           </View>
         ) : null}
 
-        {/* ── Signatures ── */}
-        <View style={styles.signaturesContainer} wrap={false}>
-          <Text style={styles.agreementText}>
-            Al firmar este documento, ambas partes están de acuerdo con el
-            alcance del trabajo, el costo y las condiciones estipuladas en esta
-            propuesta.
-          </Text>
-
-          <View style={styles.signatureBoxes}>
-            {/* Contractor */}
-            <View style={styles.sigBox}>
-              <View style={styles.sigBoxHeader}>
-                <Text style={styles.sigBoxHeaderText}>Contratista</Text>
-              </View>
-              <View style={styles.sigBody}>
-                <View style={styles.sigSpaceTop} />
-                <View style={styles.sigLine} />
-                <Text style={styles.sigName}>{quote.organization.name}</Text>
-                {license ? (
-                  <Text style={styles.sigSubtext}>Lic. {license}</Text>
-                ) : null}
-                <View style={styles.sigFieldRow}>
-                  <Text style={styles.sigFieldLabel}>Nombre:</Text>
-                  <View style={styles.sigFieldLine} />
-                </View>
-                <View style={styles.sigFieldRow}>
-                  <Text style={styles.sigFieldLabel}>Fecha:</Text>
-                  <View style={styles.sigFieldLine} />
-                </View>
-              </View>
-            </View>
-
-            {/* Client */}
-            <View style={styles.sigBox}>
-              <View style={styles.sigBoxHeader}>
-                <Text style={styles.sigBoxHeaderText}>Cliente</Text>
-              </View>
-              <View style={styles.sigBody}>
-                <View style={styles.sigSpaceTop} />
-                <View style={styles.sigLine} />
-                <Text style={styles.sigName}>{quote.client.name}</Text>
-                <View style={styles.sigFieldRow}>
-                  <Text style={styles.sigFieldLabel}>Nombre:</Text>
-                  <View style={styles.sigFieldLine} />
-                </View>
-                <View style={styles.sigFieldRow}>
-                  <Text style={styles.sigFieldLabel}>Fecha:</Text>
-                  <View style={styles.sigFieldLine} />
-                </View>
-              </View>
-            </View>
+        {/* ── SECCIÓN 6: ACEPTACIÓN ── */}
+        <SectionHeader num="6" title="Aceptación de la Propuesta" />
+        <Text style={styles.sigNote}>
+          Al firmar este documento, ambas partes están de acuerdo con el alcance
+          del trabajo, el costo y las condiciones estipuladas.
+        </Text>
+        <View style={styles.sigBoxes} wrap={false}>
+          {/* Firma del Cliente */}
+          <View style={styles.sigBox}>
+            <View style={styles.sigLine} />
+            <Text style={styles.sigBoxLabel}>Firma del Cliente</Text>
+            <Text style={styles.sigBoxSub}>Nombre: {quote.client.name}</Text>
+          </View>
+          {/* Firma del Contratista */}
+          <View style={styles.sigBox}>
+            <View style={styles.sigLine} />
+            <Text style={styles.sigBoxLabel}>{quote.organization.name}</Text>
+            {license || phone ? (
+              <Text style={styles.sigBoxSub}>
+                {[
+                  license ? `Lic. ${license}` : null,
+                  phone ? `Tel. ${phone}` : null,
+                ]
+                  .filter(Boolean)
+                  .join(" | ")}
+              </Text>
+            ) : null}
           </View>
         </View>
 
-        {/* ── Footer ── */}
+        {/* ── FOOTER ── */}
         <View style={styles.footer} fixed>
           <Text style={styles.footerText}>
             {quote.organization.name}
             {license ? `  ·  Lic. ${license}` : ""}
           </Text>
-          <Text style={styles.footerText}>FieldPro PR</Text>
           <Text
             style={styles.footerText}
             render={({ pageNumber, totalPages }) =>

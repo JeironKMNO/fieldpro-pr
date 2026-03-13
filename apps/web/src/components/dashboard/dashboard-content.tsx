@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { trpc } from "@/lib/trpc/client";
 import {
   DollarSign,
@@ -7,10 +8,9 @@ import {
   FileText,
   Users,
   TrendingUp,
-  Building2,
-  PenLine,
   Briefcase,
   Receipt,
+  Target,
 } from "lucide-react";
 import {
   Card,
@@ -25,6 +25,9 @@ import { ProfitMarginCard } from "./profit-margin-card";
 import { RecentQuotesTable } from "./recent-quotes-table";
 import { RecentClients } from "./recent-clients";
 import { NeedsAttention } from "./needs-attention";
+import { OverdueInvoicesWidget } from "./overdue-invoices";
+import { TopClientsWidget } from "./top-clients";
+import { DateRangeSelector, type DateRange } from "./date-range-selector";
 
 function fmt(value: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -69,8 +72,11 @@ function SkeletonBlock({ className }: { className?: string }) {
 }
 
 export function DashboardContent() {
-  const { data, isLoading, error } =
-    trpc.organization.dashboardStats.useQuery();
+  const [range, setRange] = useState<DateRange>("6m");
+
+  const { data, isLoading, error } = trpc.organization.dashboardStats.useQuery({
+    range,
+  });
 
   if (error) {
     const isNoOrg = error.data?.code === "UNAUTHORIZED";
@@ -129,9 +135,13 @@ export function DashboardContent() {
 
   return (
     <div className="space-y-6">
+      {/* Date Range Filter */}
+      <div className="flex justify-end">
+        <DateRangeSelector value={range} onRangeChange={setRange} />
+      </div>
+
       {/* Row 1: Vital Financial KPIs */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {/* Net Profit (Ganancia Neta) */}
         <KpiCard
           title="Ganancia Neta"
           value={fmt(data.profitMetrics.netProfit)}
@@ -139,7 +149,6 @@ export function DashboardContent() {
           description={`Margen: ${data.profitMetrics.profitMargin.toFixed(1)}%`}
           variant="primary"
         />
-        {/* Paid (Cobrado) */}
         <KpiCard
           title="Cobrado"
           value={fmt(data.profitMetrics.completedJobValue)}
@@ -147,7 +156,6 @@ export function DashboardContent() {
           description={`${data.jobCounts.COMPLETED} trabajos completados`}
           variant="default"
         />
-        {/* Outstanding (Por Cobrar) */}
         <KpiCard
           title="Por Cobrar"
           value={fmt(data.invoiceRevenue.outstanding)}
@@ -155,7 +163,6 @@ export function DashboardContent() {
           description={`${data.invoiceCounts.outstanding} facturas pendientes`}
           variant="default"
         />
-        {/* Expenses (Gastos) */}
         <KpiCard
           title="Gastos Totales"
           value={fmt(data.profitMetrics.totalExpenses)}
@@ -165,16 +172,53 @@ export function DashboardContent() {
         />
       </div>
 
-      {/* Row 2: Needs Attention (Immediate Action) */}
+      {/* Row 2: Additional KPIs */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <KpiCard
+          title="Tasa de Conversión"
+          value={`${data.conversionRate}%`}
+          icon={Target}
+          description={`${data.quoteCounts.ACCEPTED} aceptadas / ${data.quoteCounts.ACCEPTED + data.quoteCounts.REJECTED} respondidas`}
+          variant="default"
+        />
+        <KpiCard
+          title="Facturas Vencidas"
+          value={String(data.invoiceCounts.OVERDUE)}
+          icon={Receipt}
+          description={
+            data.invoiceCounts.OVERDUE > 0
+              ? "Requieren cobro inmediato"
+              : "Todo al día"
+          }
+          variant="default"
+        />
+        <KpiCard
+          title="Trabajos Activos"
+          value={String(data.jobCounts.active)}
+          icon={Briefcase}
+          description={`${data.jobCounts.SCHEDULED} programados, ${data.jobCounts.IN_PROGRESS} en progreso`}
+          variant="default"
+        />
+      </div>
+
+      {/* Row 3: Alert widgets */}
       {data.needsAttention.length > 0 && (
         <div className="pt-2">
           <NeedsAttention items={data.needsAttention} />
         </div>
       )}
+      {data.overdueInvoices.length > 0 && (
+        <div className="pt-2">
+          <OverdueInvoicesWidget items={data.overdueInvoices} />
+        </div>
+      )}
 
-      {/* Row 3: Pipeline + Revenue Chart */}
+      {/* Row 4: Pipeline + Revenue Chart */}
       <div className="grid gap-4 md:grid-cols-2 pt-2">
-        <RevenueChart data={data.monthlyFinancials} />
+        <RevenueChart
+          data={data.monthlyFinancials}
+          rangeLabel={data.rangeLabel}
+        />
         <QuotePipeline
           counts={data.quoteCounts}
           total={data.quoteCounts.total}
@@ -183,25 +227,6 @@ export function DashboardContent() {
 
       {/* Row 5: Operational Metrics & Quick Stats */}
       <div className="grid gap-4 md:grid-cols-3 pt-4">
-        {/* Active Jobs */}
-        <Card className="card-fieldpro">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-medium text-stone-500">
-              <Briefcase className="h-4 w-4" />
-              Trabajos Activos
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-stone-900 tabular-nums">
-              {data.jobCounts.active}
-            </div>
-            <p className="mt-1.5 text-xs text-stone-500">
-              {data.jobCounts.SCHEDULED} programados,{" "}
-              {data.jobCounts.IN_PROGRESS} en progreso
-            </p>
-          </CardContent>
-        </Card>
-
         {/* Total Quotes vs Pending */}
         <Card className="card-fieldpro">
           <CardHeader className="pb-2">
@@ -238,15 +263,23 @@ export function DashboardContent() {
             </p>
           </CardContent>
         </Card>
+
+        {/* Profit Margin */}
+        <ProfitMarginCard profitMetrics={data.profitMetrics} />
       </div>
 
-      {/* Row 4: Recent Quotes + Recent Clients */}
+      {/* Row 6: Recent Quotes + Recent Clients */}
       <div className="grid gap-4 md:grid-cols-2 pt-2">
         <RecentQuotesTable quotes={data.recentQuotes} />
         <RecentClients clients={data.recentClients} />
       </div>
 
-      {/* Removed excess cards as they were cluttering the UI */}
+      {/* Row 7: Top Clients */}
+      {data.topClients.length > 0 && (
+        <div className="grid gap-4 md:grid-cols-3 pt-2">
+          <TopClientsWidget clients={data.topClients} />
+        </div>
+      )}
     </div>
   );
 }

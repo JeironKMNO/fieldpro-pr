@@ -70,7 +70,13 @@ function CustomTooltip({
   );
 }
 
-export function RevenueChart({ data }: { data: MonthData[] }) {
+export function RevenueChart({
+  data,
+  rangeLabel = "Últimos 6 meses",
+}: {
+  data: MonthData[];
+  rangeLabel?: string;
+}) {
   const totalRevenue = data.reduce((s, d) => s + d.invoiceRevenue, 0);
 
   return (
@@ -80,7 +86,7 @@ export function RevenueChart({ data }: { data: MonthData[] }) {
           Ingresos vs Gastos
         </CardTitle>
         <p className="text-sm text-slate-500">
-          Últimos 6 meses &middot;{" "}
+          {rangeLabel} &middot;{" "}
           {new Intl.NumberFormat("en-US", {
             style: "currency",
             currency: "USD",

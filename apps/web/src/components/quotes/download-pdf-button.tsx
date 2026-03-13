@@ -40,7 +40,7 @@ export function DownloadPdfButton({ quote }: { quote: PdfQuote }) {
       ) : (
         <Download className="mr-2 h-4 w-4" />
       )}
-      {generating ? "Generando..." : "PDF"}
+      {generating ? "Generando..." : "Descargar"}
     </Button>
   );
 }
