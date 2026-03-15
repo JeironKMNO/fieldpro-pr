@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Send } from "lucide-react";
 import { AgentMessage } from "./agent-message";
+import { VoiceRecorderWhisper } from "./voice-recorder-whisper";
 import type { PreviewPayload } from "@/server/services/agent-tools";
 
 export interface ChatMessage {
@@ -33,125 +34,152 @@ export function AgentChat({
   const [statusMessage, setStatusMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  // Keep a live ref to messages so sendMessageWithContent can capture them
+  const messagesRef = useRef<ChatMessage[]>(messages);
+
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streamingContent]);
 
-  const sendMessage = async () => {
-    const content = input.trim();
-    if (!content || !activeConversationId || isLoading) return;
+  const sendMessageWithContent = useCallback(
+    async (content: string) => {
+      if (!content || !activeConversationId || isLoading) return;
 
-    setInput("");
-    setStatusMessage("");
-    setStreamingContent("");
+      setStatusMessage("");
+      setStreamingContent("");
 
-    const userMsg: ChatMessage = {
-      id: crypto.randomUUID(),
-      role: "user",
-      content,
-    };
-    onMessagesUpdate((prev) => [...prev, userMsg]);
-    onLoadingChange(true);
+      const userMsg: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: "user",
+        content,
+      };
+      onMessagesUpdate((prev) => [...prev, userMsg]);
+      onLoadingChange(true);
 
-    const allMessages = [...messages, userMsg];
+      const allMessages = [...messagesRef.current, userMsg];
 
-    abortRef.current = new AbortController();
+      abortRef.current = new AbortController();
 
-    try {
-      const response = await fetch("/api/ai/agent", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: allMessages.map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-          conversationId: activeConversationId,
-        }),
-        signal: abortRef.current.signal,
-      });
+      try {
+        const response = await fetch("/api/ai/agent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            messages: allMessages.map((m) => ({
+              role: m.role,
+              content: m.content,
+            })),
+            conversationId: activeConversationId,
+          }),
+          signal: abortRef.current.signal,
+        });
 
-      if (!response.ok || !response.body) {
-        throw new Error(`HTTP ${response.status}`);
-      }
+        if (!response.ok || !response.body) {
+          throw new Error(`HTTP ${response.status}`);
+        }
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      let accumulatedText = "";
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let accumulatedText = "";
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
 
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() ?? "";
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() ?? "";
 
-        let currentEvent = "";
-        for (const line of lines) {
-          if (line.startsWith("event: ")) {
-            currentEvent = line.slice(7).trim();
-          } else if (line.startsWith("data: ")) {
-            const rawData = line.slice(6);
-            try {
-              const data = JSON.parse(rawData) as Record<string, unknown>;
+          let currentEvent = "";
+          for (const line of lines) {
+            if (line.startsWith("event: ")) {
+              currentEvent = line.slice(7).trim();
+            } else if (line.startsWith("data: ")) {
+              const rawData = line.slice(6);
+              try {
+                const data = JSON.parse(rawData) as Record<string, unknown>;
 
-              if (currentEvent === "text-delta") {
-                const delta = (data.delta as string) ?? "";
-                accumulatedText += delta;
-                setStreamingContent(accumulatedText);
-              } else if (currentEvent === "text-clear") {
-                accumulatedText = "";
-                setStreamingContent("");
-              } else if (currentEvent === "status") {
-                setStatusMessage((data.message as string) ?? "");
-              } else if (currentEvent === "preview") {
-                onPreviewUpdate(data as unknown as PreviewPayload);
-              } else if (currentEvent === "done") {
-                if (accumulatedText.trim()) {
-                  const assistantMsg: ChatMessage = {
+                if (currentEvent === "text-delta") {
+                  const delta = (data.delta as string) ?? "";
+                  accumulatedText += delta;
+                  setStreamingContent(accumulatedText);
+                } else if (currentEvent === "text-clear") {
+                  accumulatedText = "";
+                  setStreamingContent("");
+                } else if (currentEvent === "status") {
+                  setStatusMessage((data.message as string) ?? "");
+                } else if (currentEvent === "preview") {
+                  onPreviewUpdate(data as unknown as PreviewPayload);
+                } else if (currentEvent === "done") {
+                  if (accumulatedText.trim()) {
+                    const assistantMsg: ChatMessage = {
+                      id: crypto.randomUUID(),
+                      role: "assistant",
+                      content: accumulatedText.trim(),
+                    };
+                    onMessagesUpdate((prev) => [...prev, assistantMsg]);
+                  }
+                  setStreamingContent("");
+                  setStatusMessage("");
+                } else if (currentEvent === "error") {
+                  const errMsg: ChatMessage = {
                     id: crypto.randomUUID(),
                     role: "assistant",
-                    content: accumulatedText.trim(),
+                    content:
+                      (data.message as string) ??
+                      "Hubo un error. Intenta de nuevo.",
                   };
-                  onMessagesUpdate((prev) => [...prev, assistantMsg]);
+                  onMessagesUpdate((prev) => [...prev, errMsg]);
+                  setStreamingContent("");
+                  setStatusMessage("");
                 }
-                setStreamingContent("");
-                setStatusMessage("");
-              } else if (currentEvent === "error") {
-                const errMsg: ChatMessage = {
-                  id: crypto.randomUUID(),
-                  role: "assistant",
-                  content:
-                    (data.message as string) ??
-                    "Hubo un error. Intenta de nuevo.",
-                };
-                onMessagesUpdate((prev) => [...prev, errMsg]);
-                setStreamingContent("");
-                setStatusMessage("");
+              } catch {
+                // ignore parse errors
               }
-            } catch {
-              // ignore parse errors
             }
           }
         }
+      } catch (err) {
+        if ((err as Error).name === "AbortError") return;
+        const errMsg: ChatMessage = {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content: "Error de conexión. Por favor intenta de nuevo.",
+        };
+        onMessagesUpdate((prev) => [...prev, errMsg]);
+        setStreamingContent("");
+        setStatusMessage("");
+      } finally {
+        onLoadingChange(false);
       }
-    } catch (err) {
-      if ((err as Error).name === "AbortError") return;
-      const errMsg: ChatMessage = {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        content: "Error de conexión. Por favor intenta de nuevo.",
-      };
-      onMessagesUpdate((prev) => [...prev, errMsg]);
-      setStreamingContent("");
-      setStatusMessage("");
-    } finally {
-      onLoadingChange(false);
-    }
-  };
+    },
+    [
+      activeConversationId,
+      isLoading,
+      onLoadingChange,
+      onMessagesUpdate,
+      onPreviewUpdate,
+    ]
+  );
+
+  const sendMessage = useCallback(async () => {
+    const content = input.trim();
+    if (!content) return;
+    setInput("");
+    await sendMessageWithContent(content);
+  }, [input, sendMessageWithContent]);
+
+  const handleVoiceTranscription = useCallback(
+    (text: string) => {
+      void sendMessageWithContent(text);
+    },
+    [sendMessageWithContent]
+  );
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -219,7 +247,7 @@ export function AgentChat({
             onKeyDown={handleKeyDown}
             placeholder={
               activeConversationId
-                ? "Escribe un mensaje..."
+                ? "Escribe o graba un mensaje..."
                 : "Selecciona o crea una conversación"
             }
             disabled={!activeConversationId || isLoading}
@@ -227,6 +255,12 @@ export function AgentChat({
             className="max-h-32 flex-1 resize-none bg-transparent text-sm text-gray-800 placeholder-gray-400 focus:outline-none disabled:cursor-not-allowed"
             style={{ minHeight: "24px" }}
           />
+          {/* Voice button (Whisper) */}
+          <VoiceRecorderWhisper
+            onTranscription={handleVoiceTranscription}
+            disabled={!activeConversationId || isLoading}
+          />
+          {/* Send button */}
           <button
             onClick={() => void sendMessage()}
             disabled={!input.trim() || !activeConversationId || isLoading}
@@ -236,7 +270,7 @@ export function AgentChat({
           </button>
         </div>
         <p className="mt-1 text-center text-[10px] text-gray-300">
-          Enter para enviar · Shift+Enter para nueva línea
+          Enter para enviar · Shift+Enter para nueva línea · 🎤 para voz
         </p>
       </div>
     </div>
