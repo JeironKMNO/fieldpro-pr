@@ -10,8 +10,10 @@ import { changeOrderRouter } from "./change-order";
 import { invoiceRouter } from "./invoice";
 import { materialRouter } from "./material";
 import { expenseRouter } from "./expense";
+import { agentRouter } from "./agent";
 
 export const appRouter = router({
+  agent: agentRouter,
   clients: clientRouter,
   organization: organizationRouter,
   note: noteRouter,

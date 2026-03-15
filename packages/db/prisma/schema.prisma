@@ -42,8 +42,9 @@ model Organization {
   jobCounter      JobCounter?
   invoices        Invoice[]
   invoiceCounter  InvoiceCounter?
-  materialLists   MaterialList[]
-  expenses        Expense[]
+  materialLists      MaterialList[]
+  expenses           Expense[]
+  agentConversations AgentConversation[]
 
   @@index([clerkId])
   @@index([slug])
@@ -680,6 +681,40 @@ model MaterialList {
 
   @@index([organizationId])
   @@map("material_lists")
+}
+
+// =====================================================
+// AGENT CONVERSATIONS
+// =====================================================
+
+model AgentConversation {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  title    String?
+  messages AgentMessage[]
+
+  @@index([organizationId])
+  @@index([organizationId, createdAt])
+  @@map("agent_conversations")
+}
+
+model AgentMessage {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  conversationId String
+  conversation   AgentConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  role    String @db.VarChar(16) // "user" | "assistant"
+  content String @db.Text
+
+  @@index([conversationId])
+  @@map("agent_messages")
 }
 
 model MaterialItem {

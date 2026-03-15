@@ -17,7 +17,7 @@ const DEFAULT_CATEGORIES = [
   { name: "Otros", sortOrder: 10 },
 ];
 
-function calculateItemTotal(
+export function calculateItemTotal(
   unitType: string,
   length: number | null,
   width: number | null,
@@ -43,7 +43,10 @@ function calculateItemTotal(
   };
 }
 
-async function recalculateQuoteTotals(db: PrismaClient, quoteId: string) {
+export async function recalculateQuoteTotals(
+  db: PrismaClient,
+  quoteId: string
+) {
   const sections = await db.quoteSection.findMany({
     where: { quoteId },
     include: { items: true },

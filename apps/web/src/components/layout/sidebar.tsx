@@ -13,10 +13,12 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  Brain,
 } from "lucide-react";
 
 const navigation = [
   { name: "Panel", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Agente IA", href: "/agent", icon: Brain },
   { name: "Clientes", href: "/clients", icon: Users },
   { name: "Cotizaciones", href: "/quotes", icon: FileText },
   { name: "Trabajos", href: "/jobs", icon: Briefcase },
@@ -44,13 +46,15 @@ export function Sidebar() {
           sidebarCollapsed ? "justify-center px-2" : "px-5 gap-3"
         )}
       >
-        <div className={cn(
-          "flex items-center justify-center shrink-0 rounded-xl bg-white/10 backdrop-blur",
-          "shadow-lg shadow-teal-900/20",
-          sidebarCollapsed ? "w-10 h-10" : "w-11 h-11"
-        )}>
-          <svg 
-            viewBox="0 0 24 24" 
+        <div
+          className={cn(
+            "flex items-center justify-center shrink-0 rounded-xl bg-white/10 backdrop-blur",
+            "shadow-lg shadow-teal-900/20",
+            sidebarCollapsed ? "w-10 h-10" : "w-11 h-11"
+          )}
+        >
+          <svg
+            viewBox="0 0 24 24"
             className="w-6 h-6 text-white"
             fill="none"
             stroke="currentColor"
@@ -131,7 +135,13 @@ interface NavItemProps {
   collapsed: boolean;
 }
 
-function NavItem({ href, icon: Icon, label, isActive, collapsed }: NavItemProps) {
+function NavItem({
+  href,
+  icon: Icon,
+  label,
+  isActive,
+  collapsed,
+}: NavItemProps) {
   return (
     <Link
       href={href}
